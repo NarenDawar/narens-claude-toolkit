@@ -34,7 +34,7 @@ When a Bash command, an MCP call or a subagent runs for minutes, Claude Code sho
 - **Subagents:** an `agent.spawn` hook adds an item once the subagent has started (when its `next(e)` resolves with the `agentId`), labeled `<type>: <description>`; the item ends on that agent's `turn.complete` or when `$.agent.list()` no longer reports it `running`. A subagent's own tool calls carry its `agentId`, so its row can end with its latest tool call and how long that has run, cut short.
 - **Item ids:** the call's `tool_use_id` when the event carries one, else a counter; parallel calls are separate items.
 - **Redraw:** one `$.clock.interval` of one second, started when the first item is added and cancelled when the last is removed, writes a tick into session state so the band redraws; an idle session does no work.
-- **Clearing:** `session.end` with reason `clear` or `resume` empties the list. If the mod reloads, running items are forgotten.
+- **Clearing:** `session.end` with reason `clear` or `resume` empties the list. If the mod reloads, the rows of calls running at that moment are dropped on the first event after the load.
 - **Failure:** every hook's own code is wrapped so an error is swallowed and the call proceeds as if the mod were not there.
 
 ## The band
@@ -100,7 +100,7 @@ A marketplace entry; the generated README catalog and `llms.txt` (`scripts/build
 - Version 1 only watches. It cannot stop or limit anything.
 - Elapsed time starts when the mod sees the call start; calls shorter than `minSeconds` never show.
 - Only a Bash call with an explicit `timeout` shows an engine limit; everything else is an advisory `warn` time you set.
-- Running items are forgotten if the mod reloads.
+- Rows of calls running when the mod reloads are dropped.
 - Not checked live: how the band looks, and the subagent rows.
 
 ## Out of scope

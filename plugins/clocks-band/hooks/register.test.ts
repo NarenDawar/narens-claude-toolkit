@@ -68,7 +68,7 @@ describe('tool calls', () => {
     const background = $.tool.call({ tool: 'Bash', command: 'sleep 600', run_in_background: true } as never)
     await clock.settle()
     expect(store.value.items).toEqual([])
-    expect(store.writes).toBe(0)
+    expect(store.writes).toBeLessThanOrEqual(1) // only the one-time clean-up of rows an earlier load left
     tool.release()
     tool.release()
     await Promise.all([read, background])
@@ -282,4 +282,71 @@ describe('the tick', () => {
     expect(store.value.tick).toBe(after)
     tool.release()
   })
+})
+
+describe('review fixes', () => {
+  test('a clock.now that never answers does not hold up a tool call', async ($, on) => {
+    on('clock.now', (() => new Promise(() => {})) as never)
+    withState(on as never)
+    on('tool.call', (() => OK) as never)
+    const result = await $.tool.call({ tool: 'Bash', command: 'ls', tool_use_id: 'c1' } as never)
+    expect(result).toEqual(expect.objectContaining({ text: 'ok' }))
+  })
+
+  test('a clock.now that never answers does not hold up a subagent spawn', async ($, on) => {
+    on('clock.now', (() => new Promise(() => {})) as never)
+    withState(on as never)
+    on('agent.spawn', (() => ({ model: 'm', agentId: 'ag-1' })) as never)
+    const result = await $.agent.spawn({ prompt: 'x', description: 'x', subagentType: 'Explore', tool_use_id: 't1' } as never)
+    expect(result).toEqual(expect.objectContaining({ agentId: 'ag-1' }))
+  })
+
+  test('a state write that never resolves does not hold up /clear', async ($, on) => {
+    mock.clock(on as never, { now: START })
+    on('state.get', (() => ({ value: { value: { items: [], tick: 0 }, version: 0 } })) as never)
+    on('state.set', (() => new Promise(() => {})) as never)
+    on('session.end', ((_: unknown, e: { sessionId: string }) => ({ sessionId: e.sessionId })) as never)
+    await $.session.end({ reason: 'clear', sessionId: 's1', resume: { id: 's1' } } as never)
+  })
+
+  test('rows left in state by an earlier load are dropped on the first event', async ($, on) => {
+    const clock = mock.clock(on as never, { now: START })
+    const store = withState(on as never)
+    store.value = {
+      items: [{ id: 'old', kind: 'bash', label: 'left behind', startedAt: 0, limitMs: null, limitKind: null }],
+      tick: 0,
+    }
+    on('tool.call', (() => OK) as never)
+    await $.tool.call({ tool: 'Read', file_path: 'a.md' } as never)
+    await clock.settle()
+    expect(ids(store)).toEqual([])
+  })
+
+  test(
+    'a call a hook above gives up on is removed when its dispatch is abandoned',
+    {
+      plugins: [
+        {
+          name: 'impatient',
+          tier: 'prepend',
+          register(on) {
+            on('tool.call', async ($, e, next) =>
+              Promise.race([next(e), $.clock.sleep(1000).then(() => ({ deny: 'too slow' }))]) as never)
+          },
+        },
+      ],
+    },
+    async ($, on) => {
+      const clock = mock.clock(on as never, { now: START })
+      const store = withState(on as never)
+      on('tool.call', (() => new Promise(() => {})) as never)
+      const call = $.tool.call({ tool: 'Bash', command: 'sleep 99', tool_use_id: 'c1' } as never)
+      await clock.settle()
+      expect(ids(store)).toEqual(['c1'])
+      await clock.advance(1000)
+      await call
+      await clock.settle()
+      expect(ids(store)).toEqual([])
+    },
+  )
 })

@@ -22,6 +22,10 @@ export const clocksAtom = atom({ plugin: 'clocks-band', key: 'clocks' } as const
 
 type Hooked = Parameters<Parameters<Parameters<Register>[0]>[2]>[0]
 
+// Ids this load of the module has added. State survives a hot reload but this module's variables do
+// not, so on the first event after a load, rows it did not add are left over from an earlier load.
+const mine = new Set<string>()
+let fresh = false
 let counter = 0
 let timer: { cancel: () => void } | null = null
 
@@ -68,6 +72,19 @@ const startTimer = ($: Hooked): void => {
   })
 }
 
+const freshen = async ($: Hooked): Promise<void> => {
+  if (fresh) return
+  fresh = true
+  await update($, clocksAtom, state => ({ ...state, items: state.items.filter(item => mine.has(item.id)) }))
+}
+
+// The start time is asked for at once but only awaited off the call's path.
+const record = async ($: Hooked, started: Promise<number>, make: (startedAt: number) => Item, then?: (item: Item) => Promise<unknown>): Promise<void> => {
+  const item = make(await started)
+  await add($, item)
+  if (then) await then(item)
+}
+
 const add = async ($: Hooked, item: Item): Promise<void> => {
   await update($, clocksAtom, state => ({ ...state, items: addItem(state.items, item) }))
   startTimer($)
@@ -81,46 +98,58 @@ const change = async ($: Hooked, edit: (items: readonly Item[]) => Item[]): Prom
 export const register: Register = (on, rawOptions) => {
   const options = readOptions(rawOptions)
   on('tool.call', async ($, e, next) => {
+    quietly(freshen($))
     const kind = kindOfTool(e.tool)
     const input = e as unknown as { command?: unknown; timeout?: unknown; run_in_background?: unknown }
     if (kind === null || input.run_in_background === true) {
       return next(e)
     }
-    const id = e.tool_use_id ?? `call-${(counter += 1)}`
+    const id = e.tool_use_id
     const agentId = (e as { agentId?: string }).agentId
+    mine.add(id)
+    const label = labelFor(kind, { command: input.command, tool: e.tool })
+    const limit = limitFor(kind, input, options)
     let added: Promise<unknown> = Promise.resolve()
     try {
-      const startedAt = await $.clock.now()
-      const label = labelFor(kind, { command: input.command, tool: e.tool })
-      const item: Item = { id, kind, label, startedAt, ...limitFor(kind, input, options) }
-      added = add($, item)
-        .then(() => (agentId === undefined ? undefined : change($, items => setDoing(items, agentId, { id, label, startedAt }))))
-        .catch(() => {})
+      const started = $.clock.now()
+      started.catch(() => {})
+      added = record(
+        $,
+        started,
+        startedAt => ({ id, kind, label, startedAt, ...limit }),
+        item => (agentId === undefined ? undefined : change($, items => setDoing(items, agentId, { id, label, startedAt: item.startedAt }))),
+      ).catch(() => {})
     } catch {
       // not recorded; the call proceeds as if the mod were not there
+    }
+    const remove = (): void => {
+      quietly(added.then(() => change($, items => clearDoing(removeItem(items, id), agentId ?? '', id))))
+    }
+    try {
+      next.signal.addEventListener('abort', remove, { once: true })
+    } catch {
+      // no signal to listen to; the finally below still covers calls that settle
     }
     try {
       return await next(e)
     } finally {
-      quietly(added.then(() => change($, items => clearDoing(removeItem(items, id), agentId ?? '', id))))
+      remove()
     }
   })
 
   on('agent.spawn', async ($, e, next) => {
+    quietly(freshen($))
     const result = await next(e)
     try {
-      if (result.agentId !== undefined) {
-        const startedAt = await $.clock.now()
-        const agentId = result.agentId
-        const item: Item = {
-          id: `agent:${agentId}`,
-          kind: 'subagent',
-          label: labelFor('subagent', { subagentType: e.subagentType, description: e.description }),
-          startedAt,
-          ...limitFor('subagent', {}, options),
-          agentId,
-        }
-        quietly(add($, item))
+      const agentId = result.agentId
+      if (agentId !== undefined) {
+        const id = `agent:${agentId}`
+        mine.add(id)
+        const started = $.clock.now()
+        started.catch(() => {})
+        const label = labelFor('subagent', { subagentType: e.subagentType, description: e.description })
+        const limit = limitFor('subagent', {}, options)
+        quietly(record($, started, startedAt => ({ id, kind: 'subagent', label, startedAt, ...limit, agentId })))
       }
     } catch {
       // the spawn is untouched
@@ -129,6 +158,7 @@ export const register: Register = (on, rawOptions) => {
   })
 
   on('turn.complete', async ($, e, next) => {
+    quietly(freshen($))
     const result = await next(e)
     try {
       const agentId = (e as { agentId?: string }).agentId
@@ -146,7 +176,8 @@ export const register: Register = (on, rawOptions) => {
     if (e.reason === 'clear' || e.reason === 'resume') {
       try {
         stopTimer()
-        await update($, clocksAtom, () => EMPTY)
+        mine.clear()
+        quietly(update($, clocksAtom, () => EMPTY))
       } catch {
         // never break the session
       }
