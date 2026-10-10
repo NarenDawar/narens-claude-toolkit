@@ -1,0 +1,56 @@
+{
+  "name": "clocks-band",
+  "version": "0.1.0",
+  "description": "A band above the prompt showing every Bash command, MCP call and subagent that has run for a while, with elapsed time against its limit.",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/clocks-band",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-mods", "timers", "subagents"],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "minSeconds": {
+      "type": "number",
+      "title": "Show after (seconds)",
+      "description": "A call or subagent gets a row once it has run this long.",
+      "default": 5,
+      "min": 1,
+      "max": 600
+    },
+    "maxRows": {
+      "type": "number",
+      "title": "Most rows",
+      "description": "Rows shown before '+N more'.",
+      "default": 4,
+      "min": 1,
+      "max": 20
+    },
+    "subagentWarnMinutes": {
+      "type": "number",
+      "title": "Subagent warn time (minutes)",
+      "description": "A subagent row is marked OVER past this time. Advisory: the mod stops nothing.",
+      "default": 10,
+      "min": 1,
+      "max": 1440
+    },
+    "mcpWarnSeconds": {
+      "type": "number",
+      "title": "MCP call warn time (seconds)",
+      "description": "An MCP call row is marked OVER past this time. Advisory: the mod stops nothing.",
+      "default": 120,
+      "min": 1,
+      "max": 86400
+    },
+    "bashDefaultLimitSeconds": {
+      "type": "number",
+      "title": "Limit shown for a Bash call with no timeout (seconds)",
+      "description": "0 shows no limit for a Bash call that carries no timeout of its own.",
+      "default": 0,
+      "min": 0,
+      "max": 3600
+    }
+  }
+}
