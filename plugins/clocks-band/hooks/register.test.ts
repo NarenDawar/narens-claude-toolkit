@@ -194,6 +194,9 @@ describe('subagents', () => {
     status = 'killed'
     await clock.advance(1000)
     expect(ids(store)).toEqual([])
+    const after = store.value.tick
+    await clock.advance(5000)
+    expect(store.value.tick).toBe(after)
   })
 
   test('a subagent row shows the latest tool call of that subagent while it runs', async ($, on) => {

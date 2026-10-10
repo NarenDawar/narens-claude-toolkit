@@ -71,6 +71,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
       expect(text).toContain('pytest -q tests/')
       expect(text).toContain('2m10s / 10m00s limit')
       expect(text).not.toContain('OVER')
+      expect(text).not.toContain('red')
     })
 
     test('an item at its limit says OVER', async ($, on) => {
@@ -78,6 +79,7 @@ for (const surface of ['terminal', 'desktop'] as const) {
       withState(on as never, { items: [bashItem({ startedAt: NOW - 600_000 })], tick: 0 })
       const text = await textOf(await mount($, surface))
       expect(text).toContain('OVER')
+      expect(text).toContain('red')
     })
 
     test('warn and limit are worded differently', async ($, on) => {

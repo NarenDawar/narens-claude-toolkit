@@ -262,6 +262,7 @@ describe('formatRows', () => {
       45,
     )
     expect(lines[0].endsWith('2m10s / 10m00s limit')).toBe(true)
+    expect(Array.from(lines[0]).length).toBeLessThanOrEqual(45)
     expect(lines[0]).toContain('…')
     expect(formatRows(rows([{ label: 'x', startedAt: NOW - 10_000 }]), 0, NOW, 5)[0]).toContain('10s')
   })
