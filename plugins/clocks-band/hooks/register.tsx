@@ -1,4 +1,4 @@
-import { atom, update } from 'claude-code'
+import { atom, read, update } from 'claude-code'
 import type { Register } from 'claude-code'
 
 import type { ClockState, Item } from '../types'
@@ -6,12 +6,14 @@ import {
   addItem,
   clearDoing,
   endAgent,
+  formatRows,
   kindOfTool,
   labelFor,
   limitFor,
   readOptions,
   removeItem,
   setDoing,
+  visibleRows,
 } from './clocks'
 
 const EMPTY: ClockState = { items: [], tick: 0 }
@@ -150,5 +152,29 @@ export const register: Register = (on, rawOptions) => {
       }
     }
     return next(e)
+  })
+
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    try {
+      const props = e.props as { hasSurvey?: boolean; bodyColumns?: number }
+      if (props.hasSurvey) return next(e)
+      const state = await read($, clocksAtom)
+      const now = await $.clock.now()
+      const { rows, more } = visibleRows(state.items, now, options)
+      if (rows.length === 0) return next(e)
+      const lines = formatRows(rows, more, now, typeof props.bodyColumns === 'number' ? props.bodyColumns : 100)
+      const { Box, Text } = $.ui.resolve(e)
+      return (
+        <Box flexDirection="column">
+          {lines.map((line, index) => (
+            <Text key={index} wrap="truncate" color={line.includes('  OVER') ? 'red' : undefined} dimColor={!line.includes('  OVER')}>
+              {line}
+            </Text>
+          ))}
+        </Box>
+      )
+    } catch {
+      return next(e)
+    }
   })
 }
