@@ -48,6 +48,11 @@
       "name": "local-answer-router",
       "source": "./plugins/local-answer-router",
       "description": "Answers trivial questions (what branch, what changed, did the last test pass) from git and the last test run on your machine, with no model tokens."
+    },
+    {
+      "name": "clocks-band",
+      "source": "./plugins/clocks-band",
+      "description": "A band above the prompt showing every Bash command, MCP call and subagent that has run for a while, with elapsed time against its limit."
     }
   ]
 }
