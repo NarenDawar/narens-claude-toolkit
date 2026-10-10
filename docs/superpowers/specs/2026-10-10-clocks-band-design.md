@@ -1,6 +1,6 @@
 # clocks-band: a band of what is running and for how long
 
-Date: 2026-10-11
+Date: 2026-10-10
 
 ## Purpose
 
@@ -89,7 +89,7 @@ Written first, with `claude plugin test`; nothing calls a real model.
 
 ## The live probe (before v1.1, not shipped)
 
-A throwaway mod kept outside the plugin folders, run with `claude -p --plugin-dir` under a small budget cap, each run approved by the owner first, answering: (1) does a hook that answers before `next(e)` settles stop the process beneath it (`sleep 15 && touch marker` and look for the marker); (2) does `$.turn.abort` stop a running Bash; (3) the real tool names from `$.tool.list()` and whether a stop-task tool called through `$.tool.call` stops a background shell or subagent; (4) the basics v1 relies on (a `tool.call` hook sees start and end; an `agent.spawn` hook fires for a model-started subagent; the name and unit of a Bash call's `timeout`). Findings go into `docs/superpowers/notes/2026-10-11-clocks-band-probe.md`; v1.1 gets its own spec.
+A throwaway mod kept outside the plugin folders, run with `claude -p --plugin-dir` under a small budget cap, each run approved by the owner first, answering: (1) does a hook that answers before `next(e)` settles stop the process beneath it (`sleep 15 && touch marker` and look for the marker); (2) does `$.turn.abort` stop a running Bash; (3) the real tool names from `$.tool.list()` and whether a stop-task tool called through `$.tool.call` stops a background shell or subagent; (4) the basics v1 relies on (a `tool.call` hook sees start and end; an `agent.spawn` hook fires for a model-started subagent; the name and unit of a Bash call's `timeout`). Findings go into `docs/superpowers/notes/2026-10-10-clocks-band-probe.md`; v1.1 gets its own spec.
 
 ## Repo integration
 
