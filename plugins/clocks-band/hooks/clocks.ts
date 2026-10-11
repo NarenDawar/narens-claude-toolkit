@@ -38,11 +38,22 @@ export const readOptions = (raw: Readonly<Record<string, unknown>>): Options => 
   return out
 }
 
-/** One line of safe text: control characters become visible escapes, whitespace collapses, long text is cut. */
+/**
+ * Characters that are invisible or reorder what follows them: zero-width
+ * (U+200B-U+200D), the bidi marks and embeddings (U+200E-U+200F, U+202A-U+202E)
+ * and the isolates (U+2066-U+2069). A command carrying a right-to-left override
+ * would otherwise be drawn reversed in the band, so a label could not be
+ * trusted to show what is about to run.
+ */
+const INVISIBLE_OR_BIDI = /[\u200b-\u200f\u202a-\u202e\u2066-\u2069]/g
+
+/** One line of safe text: control, zero-width and bidi characters become visible escapes, whitespace collapses, long text is cut. */
 export const escapeText = (text: string, max: number): string => {
+  const escape = (char: string): string => `\\u${char.charCodeAt(0).toString(16).padStart(4, '0')}`
   const flat = String(text)
     .replace(/[\r\n\t]+/g, ' ')
     .replace(/[\u0000-\u001f\u007f-\u009f]/g, char => `\\x${char.charCodeAt(0).toString(16).padStart(2, '0')}`)
+    .replace(INVISIBLE_OR_BIDI, escape)
     .replace(/ {2,}/g, ' ')
     .trim()
   const chars = Array.from(flat)
