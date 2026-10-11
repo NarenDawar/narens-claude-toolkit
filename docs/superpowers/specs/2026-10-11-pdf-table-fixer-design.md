@@ -1,6 +1,6 @@
 # PDF Table Fixer: design
 
-Date: 2026-10-11. Status: awaiting review.
+Date: 2026-10-11. Status: approved.
 
 ## Purpose
 
@@ -49,7 +49,7 @@ It never changes text, page content streams, fonts, links, other tags or metadat
 3. Encrypted PDFs, PDFs with no structure tree and PDFs that cannot be opened are refused with the reason.
 4. After writing, the output is reopened: page count is unchanged and every marked-content reference present before is still in the structure tree after. A failure here discards the output.
 5. A summary lists each applied table: id, what changed, cells touched.
-6. Exit codes: 0 success, 1 validation regression, 2 bad input or plan.
+6. Exit codes: 0 success, 1 validation regression, 2 bad input, bad plan or missing dependency, 3 output failed the post-write check (nothing written).
 
 Honest limit (README): the checks prove the structure is valid and consistent, not that the chosen headers are the semantically right ones. That rests on Claude's reading of the evidence and the user's review of the diff.
 

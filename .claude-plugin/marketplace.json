@@ -45,6 +45,11 @@
       "description": "Use when the user wants to pick the cheapest model that still works for a custom subagent, asks whether Haiku or Sonnet would do, or wants to re-check an agent's model after new models ship (for example 'which model should this agent use?', 'could this run on Haiku?', 'bake-off my reviewer agent')."
     },
     {
+      "name": "pdf-table-fixer",
+      "source": "./plugins/pdf-table-fixer",
+      "description": "Use when the user has a tagged PDF whose tables fail accessibility checks or read badly in a screen reader (for example 'fix the table headers in this PDF', 'my PDF tables fail PDF/UA', 'repair the table tags')."
+    },
+    {
       "name": "local-answer-router",
       "source": "./plugins/local-answer-router",
       "description": "Answers trivial questions (what branch, what changed, did the last test pass) from git and the last test run on your machine, with no model tokens."
