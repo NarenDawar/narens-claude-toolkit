@@ -39,7 +39,7 @@ Copy `plugins/pdf-table-fixer/skills/pdf-table-fixer` into `~/.claude/skills/`.
 - The checks prove the structure is valid and consistent, not that the chosen headers are the semantically right ones. That rests on Claude's reading and your review of the diff.
 - Encrypted and signed files are refused. Saving rewrites the whole file.
 - Row and cell order evidence uses where text is drawn and is approximate. Text in fonts without a ToUnicode map cannot be read and is flagged.
-- **Not yet run on real-world PDFs, and the veraPDF report parsing has not been run against a real veraPDF** (veraPDF was not installed when this was built; the parser is tested against report text written to match veraPDF's XML).
+- **Checked so far:** one real-producer PDF (Chrome's tagged output) and generated faults, validated with veraPDF 1.30.3, where the tool's fixes cleared three table rules (7.5-1, 7.5-2, 7.2-43) with no new failures. **Not yet run on PDFs from Word, InDesign, Acrobat or LaTeX**, which tag tables differently. veraPDF PDF/UA-1 does not flag a table that has no header cells at all, so for that fault a clean veraPDF result before and after does not show an improvement.
 
 ## Example
 
