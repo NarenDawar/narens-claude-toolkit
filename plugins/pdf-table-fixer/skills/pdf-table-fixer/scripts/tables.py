@@ -96,6 +96,19 @@ def _plan_diff(path, plan_path):
     return 0
 
 
+def _apply(path, plan_path, out_path):
+    import tf_apply
+
+    try:
+        for line in tf_apply.run_apply(path, plan_path, out_path):
+            print(line)
+    except tf_apply.PostCheckFailed as exc:
+        print(f"output failed the post-write check, nothing written: {exc}", file=sys.stderr)
+        return 3
+    print(f"wrote {out_path}")
+    return 0
+
+
 def main(argv=None):
     try:
         import pikepdf  # noqa: F401
@@ -112,12 +125,18 @@ def main(argv=None):
     p = sub.add_parser("plan-diff")
     p.add_argument("pdf")
     p.add_argument("--plan", required=True)
+    p = sub.add_parser("apply")
+    p.add_argument("pdf")
+    p.add_argument("--plan", required=True)
+    p.add_argument("--out", required=True)
     args = ap.parse_args(argv)
     try:
         if args.cmd == "inspect":
             return _inspect(args.pdf, args.json)
         if args.cmd == "plan-diff":
             return _plan_diff(args.pdf, args.plan)
+        if args.cmd == "apply":
+            return _apply(args.pdf, args.plan, args.out)
     except tf_struct.Refusal as exc:
         print(str(exc), file=sys.stderr)
         return 2

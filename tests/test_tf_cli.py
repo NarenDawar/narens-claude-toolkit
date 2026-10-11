@@ -89,5 +89,31 @@ class PlanDiffTests(unittest.TestCase):
         self.assertIn("t7", err)
 
 
+@unittest.skipUnless(pdf_builder.HAVE_PIKEPDF, "pikepdf not installed")
+class ApplyCliTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        d = Path(self.tmp.name)
+        self.src, self.out, self.plan = d / "in.pdf", d / "out.pdf", d / "plan.json"
+        pdf_builder.make_pdf(self.src, [[["Name", "Qty"], ["Apple", "3"]]])
+
+    def test_apply_writes_output_and_prints_summary(self):
+        self.plan.write_text(json.dumps({"tables": {"t1": {"header_rows": 1}}}), encoding="utf-8")
+        code, out, _ = run(["apply", str(self.src), "--plan", str(self.plan), "--out", str(self.out)])
+        self.assertEqual(code, 0)
+        self.assertTrue(self.out.exists())
+        self.assertIn("t1", out)
+        code, out, _ = run(["inspect", str(self.out)])
+        self.assertNotIn("no_header", out)
+
+    def test_apply_bad_plan_exits_2_and_writes_nothing(self):
+        self.plan.write_text(json.dumps({"tables": {"t5": {}}}), encoding="utf-8")
+        code, _, err = run(["apply", str(self.src), "--plan", str(self.plan), "--out", str(self.out)])
+        self.assertEqual(code, 2)
+        self.assertIn("t5", err)
+        self.assertFalse(self.out.exists())
+
+
 if __name__ == "__main__":
     unittest.main()
