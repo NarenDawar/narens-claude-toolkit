@@ -75,7 +75,7 @@ class PlanDiffTests(unittest.TestCase):
 
     def test_plan_diff_prints_changes_and_writes_nothing(self):
         before = self.path.read_bytes()
-        self.plan.write_text(json.dumps({"tables": {"t1": {"header_rows": 1}}}), encoding="utf-8")
+        self.plan.write_text(json.dumps({"tables": {"t1": {"expect": {"rows": 2, "cells": 4}, "header_rows": 1}}}), encoding="utf-8")
         code, out, _ = run(["plan-diff", str(self.path), "--plan", str(self.plan)])
         self.assertEqual(code, 0)
         self.assertIn("t1", out)
@@ -99,7 +99,7 @@ class ApplyCliTests(unittest.TestCase):
         pdf_builder.make_pdf(self.src, [[["Name", "Qty"], ["Apple", "3"]]])
 
     def test_apply_writes_output_and_prints_summary(self):
-        self.plan.write_text(json.dumps({"tables": {"t1": {"header_rows": 1}}}), encoding="utf-8")
+        self.plan.write_text(json.dumps({"tables": {"t1": {"expect": {"rows": 2, "cells": 4}, "header_rows": 1}}}), encoding="utf-8")
         code, out, _ = run(["apply", str(self.src), "--plan", str(self.plan), "--out", str(self.out)])
         self.assertEqual(code, 0)
         self.assertTrue(self.out.exists())

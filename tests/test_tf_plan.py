@@ -38,6 +38,9 @@ class PlanTests(unittest.TestCase):
 
     def check(self, rows, tplan, **kw):
         ts = self.tables(rows, **kw)
+        if "expect" not in tplan:  # expect is required; tests that are not about it get the right one
+            t = ts[0]
+            tplan = dict(tplan, expect={"rows": len(t["rows"]), "cells": sum(len(r["cells"]) for r in t["rows"])})
         layouts, errors = tf_plan.check_plan({"tables": {"t1": tplan}}, ts)
         return ts, layouts, errors
 
@@ -134,6 +137,51 @@ class PlanTests(unittest.TestCase):
         self.assertTrue(any("row 0 cell 0" in l and "TD->TH" in l and "Column" in l for l in lines))
         ts, layouts, _ = self.check(self.GRID, {})
         self.assertEqual(tf_plan.diff(ts[0], layouts["t1"]), [])
+
+    def test_expect_is_required(self):
+        ts = self.tables(self.GRID)
+        _, errors = tf_plan.check_plan({"tables": {"t1": {"header_rows": 1}}}, ts)
+        self.assertTrue(any("expect is required" in e for e in errors))
+
+    def test_row_order_across_two_tbody_elements_is_refused(self):
+        import pikepdf
+        pdf_builder.make_pdf(self.path, [[["H"], ["a"], ["b"]]], sections=True)
+        with pikepdf.open(self.path, allow_overwriting_input=True) as pdf:
+            table = pdf.Root.StructTreeRoot.K.K[0]
+            thead, tbody = table.K[0], table.K[1]
+            tr_b = tbody.K[1]
+            tbody2 = pdf.make_indirect(pikepdf.Dictionary(Type=pikepdf.Name.StructElem, S=pikepdf.Name.TBody,
+                                                          P=table, K=pikepdf.Array([tr_b])))
+            tr_b.P = tbody2
+            tbody.K = pikepdf.Array([tbody.K[0]])
+            table.K = pikepdf.Array([thead, tbody, tbody2])
+            pdf.save(self.path)
+        self._close_all()
+        pdf = tf_struct.open_checked(self.path)
+        self._open.append(pdf)
+        ts = tf_struct.read_tables(pdf)
+        base = {"expect": {"rows": 3, "cells": 3}}
+        _, errors = tf_plan.check_plan({"tables": {"t1": dict(base, row_order=[0, 2, 1])}}, ts)
+        self.assertTrue(any("section" in e for e in errors))
+        _, errors = tf_plan.check_plan({"tables": {"t1": dict(base, row_order=[0, 1, 2])}}, ts)
+        self.assertEqual(errors, [])
+
+    def test_minted_ids_avoid_ids_already_in_the_document(self):
+        ts = self.tables([["A", "B"], ["x", "y"]])
+        plan = {"tables": {"t1": {"expect": {"rows": 2, "cells": 4}, "header_rows": 1, "headers": {"1.0": ["0.0"]}}}}
+        layouts, errors = tf_plan.check_plan(plan, ts, taken={"t1-h0-0"})
+        self.assertEqual(errors, [])
+        minted = layouts["t1"]["attrs"][(0, 0)]["id"]
+        self.assertNotEqual(minted, "t1-h0-0")
+        self.assertEqual(layouts["t1"]["attrs"][(1, 0)]["headers"], [minted])
+
+    def test_headers_left_pointing_at_a_demoted_cell_is_an_error_and_can_be_cleared(self):
+        rows = [[{"text": "R1", "tag": "TH", "id": "rh1"}, "a"],
+                [{"text": "R2", "tag": "TH", "id": "rh2"}, {"text": "b", "headers": ["rh2"]}]]
+        _, _, errors = self.check(rows, {"header_rows": 1})
+        self.assertTrue(any("no longer" in e and "1.1" in e for e in errors))
+        _, _, errors = self.check(rows, {"header_rows": 1, "headers": {"1.1": []}})
+        self.assertEqual(errors, [])
 
     def test_load_plan_rejects_bad_json(self):
         p = Path(self.tmp.name) / "p.json"

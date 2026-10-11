@@ -104,6 +104,52 @@ def table_attrs(e, create=False):
     return table_attrs(e)
 
 
+def own_table_attrs(e):
+    """Give element e its own copy of its table attribute dictionary and return it.
+
+    Producers may share one attribute object between many cells; editing it in place
+    would change every cell that shares it."""
+    clone = lambda d: pikepdf.Dictionary({k: v for k, v in d.items()})
+    new_owner = lambda: pikepdf.Dictionary(O=pikepdf.Name.Table)
+    a = e.get("/A")
+    if isinstance(a, pikepdf.Dictionary):
+        if a.get("/O") == "/Table":
+            e.A = clone(a)
+        else:
+            e.A = pikepdf.Array([a, new_owner()])
+    elif isinstance(a, pikepdf.Array):
+        items, found = [], False
+        for item in a:
+            if not found and isinstance(item, pikepdf.Dictionary) and item.get("/O") == "/Table":
+                items.append(clone(item))
+                found = True
+            else:
+                items.append(item)
+        if not found:
+            items.append(new_owner())
+        e.A = pikepdf.Array(items)
+    else:
+        e.A = new_owner()
+    return table_attrs(e)
+
+
+def all_ids(pdf):
+    """Every /ID in the structure tree, as text."""
+    found = set()
+
+    def walk(e, depth):
+        if depth > MAX_DEPTH:
+            raise Refusal("structure tree too deep or cyclic")
+        if "/ID" in e:
+            found.add(str(e["/ID"]))
+        for k in kids(e):
+            if _is_elem(k):
+                walk(k, depth + 1)
+
+    walk(pdf.Root.StructTreeRoot, 0)
+    return found
+
+
 def read_tables(pdf):
     root = pdf.Root.StructTreeRoot
     rolemap = _role_map(root)

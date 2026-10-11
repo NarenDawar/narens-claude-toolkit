@@ -22,11 +22,11 @@ In this skill's `scripts/` folder. They need Python 3 and `pikepdf` (`python -m 
 
 JSON, one entry per table id from `inspect`. Every index is the one `inspect` printed. Allowed keys per table, nothing else:
 
-- `expect`: `{"rows": N, "cells": M}`, copied from `inspect --json` (`rows_count`, `cells_count`). Always include it; it stops a plan from being applied to the wrong file.
+- `expect`: `{"rows": N, "cells": M}`, copied from `inspect --json` (`rows_count`, `cells_count`). Required: a plan without it is refused, because it is what stops a plan from being applied to the wrong file.
 - `header_rows`, `header_cols`: how many rows at the top and columns at the left are headers. If you give either, you are declaring every header in the table; any other cell becomes a plain data cell.
 - `spans`: `[{"row": r, "cell": i, "rowspan": n, "colspan": m}]`.
 - `row_order`: the old row numbers in their new order (rows stay in their THead/TBody/TFoot section). `cell_order`: `{"<old row>": [old cell numbers in new order]}`.
-- `headers`: `{"<row>.<cell>": ["<row>.<cell>", ...]}`, a data cell mapped to the header cells it falls under, for tables whose headers need more than a scope (two or more header levels, irregular spans).
+- `headers`: `{"<row>.<cell>": ["<row>.<cell>", ...]}`, a data cell mapped to the header cells it falls under, for tables whose headers need more than a scope (two or more header levels, irregular spans). An empty list clears a cell's existing Headers (needed when a cell it pointed at stops being a header).
 
 Example:
 
@@ -57,5 +57,5 @@ Example:
 | --- | --- |
 | Declaring `header_rows` for a table that has a header column too | Give `header_cols` as well, or the left column becomes plain data cells |
 | Using new row numbers in `spans` or `headers` after a `row_order` | All indices are the original ones from `inspect` |
-| Skipping `expect` | Always include it |
+| Skipping `expect` | It is required; copy `rows_count` and `cells_count` from `inspect --json` |
 | Calling the result accessible after a veraPDF pass | Say what was checked: veraPDF PDF/UA-1 only |

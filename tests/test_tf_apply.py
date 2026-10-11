@@ -29,6 +29,13 @@ class ApplyTests(unittest.TestCase):
         self.plan.write_text(json.dumps({"tables": {"t1": tp}}), encoding="utf-8")
 
     def run_apply(self, tp):
+        if "expect" not in tp:  # expect is required; tests that are not about it get the right one
+            pdf = tf_struct.open_checked(self.src)
+            try:
+                t = tf_struct.read_tables(pdf)[0]
+            finally:
+                pdf.close()
+            tp = dict(tp, expect={"rows": len(t["rows"]), "cells": sum(len(r["cells"]) for r in t["rows"])})
         self.write_plan(tp)
         return tf_apply.run_apply(self.src, self.plan, self.out)
 
@@ -154,6 +161,97 @@ class ApplyTests(unittest.TestCase):
         with self.assertRaisesRegex(tf_struct.Refusal, "signed"):
             self.run_apply({"header_rows": 1})
         self.assertFalse(self.out.exists())
+
+    def test_shared_attribute_object_does_not_leak_between_cells(self):
+        pdf_builder.make_pdf(self.src, [[["A", "B"], ["x", "y"]]])
+        with pikepdf.open(self.src, allow_overwriting_input=True) as pdf:
+            shared = pdf.make_indirect(pikepdf.Dictionary(O=pikepdf.Name.Table))
+            for t in tf_struct.read_tables(pdf):
+                for r in t["rows"]:
+                    for c in r["cells"]:
+                        c["_obj"].A = shared
+            pdf.save(self.src)
+        self.run_apply({"header_rows": 1, "header_cols": 1})
+        _, cells = self.cells()
+        self.assertEqual([[c["scope"] for c in r] for r in cells], [["Both", "Column"], ["Row", None]])
+
+    def test_check_layout_catches_a_layout_that_did_not_land(self):
+        pdf_builder.make_pdf(self.src, [self.GRID])
+        pdf = tf_struct.open_checked(self.src)
+        self.addCleanup(pdf.close)
+        tables = tf_struct.read_tables(pdf)
+        plan = {"tables": {"t1": {"expect": {"rows": 3, "cells": 6}, "header_rows": 1}}}
+        layouts, errs = tf_plan.check_plan(plan, tables)
+        self.assertEqual(errs, [])
+        self.assertTrue(tf_apply.check_layout(tables, layouts, tf_struct.read_tables(pdf)))  # nothing applied yet
+        tf_apply.apply_layout(tables[0], layouts["t1"])
+        self.assertEqual(tf_apply.check_layout(tables, layouts, tf_struct.read_tables(pdf)), [])
+
+    def test_a_wrong_attribute_that_slips_through_fails_the_post_write_check(self):
+        pdf_builder.make_pdf(self.src, [self.GRID])
+        orig = tf_apply.apply_layout
+
+        def sabotage(table, layout):
+            orig(table, layout)
+            table["rows"][0]["cells"][0]["_obj"].A.Scope = pikepdf.Name.Row
+
+        tf_apply.apply_layout = sabotage
+        self.addCleanup(setattr, tf_apply, "apply_layout", orig)
+        with self.assertRaisesRegex(tf_apply.PostCheckFailed, "not what the plan resolved to"):
+            self.run_apply({"header_rows": 1})
+        self.assertFalse(self.out.exists())
+
+    def test_uncompressed_and_asciihex_content_streams_can_be_applied(self):
+        for mode in ("plain", "hex"):
+            pdf_builder.make_pdf(self.src, [self.GRID])
+            with pikepdf.open(self.src, allow_overwriting_input=True) as pdf:
+                data = pdf.pages[0].Contents.read_bytes()
+                if mode == "plain":
+                    pdf.pages[0].Contents = pdf.make_stream(data)
+                    pdf.save(self.src, compress_streams=False)
+                else:
+                    s = pdf.make_stream(data.hex().encode() + b">")
+                    s.Filter = pikepdf.Name.ASCIIHexDecode
+                    pdf.pages[0].Contents = s
+                    pdf.save(self.src, compress_streams=False, stream_decode_level=pikepdf.StreamDecodeLevel.none)
+            self.run_apply({"header_rows": 1})
+            self.assertTrue(self.out.exists(), mode)
+            self.out.unlink()
+
+    def test_untouched_ids_are_not_rewritten(self):
+        pdf_builder.make_pdf(self.src, [[["A", "B"], ["x", "y"]]])
+        raw = b"\xfe\xff\x00a"
+        with pikepdf.open(self.src, allow_overwriting_input=True) as pdf:
+            tf_struct.read_tables(pdf)[0]["rows"][1]["cells"][0]["_obj"].ID = pikepdf.String(raw)
+            pdf.save(self.src)
+        self.run_apply({"header_rows": 1})
+        with pikepdf.open(self.out) as pdf:
+            self.assertEqual(bytes(pdf.Root.StructTreeRoot.K.K[0].K[1].K[0].ID), raw)
+
+    def test_minted_ids_are_unique_in_the_document_and_listed_in_an_idtree(self):
+        pdf_builder.make_pdf(self.src, [[["A", "B"], ["x", "y"]],
+                                        [[{"text": "Q", "tag": "TH", "scope": "Column", "id": "t1-h0-0"}]]])
+        self.run_apply({"header_rows": 1, "headers": {"1.0": ["0.0"]}})
+        with pikepdf.open(self.out) as pdf:
+            found = []
+
+            def walk(e):
+                if "/ID" in e:
+                    found.append(str(e["/ID"]))
+                for k in tf_struct.kids(e):
+                    if isinstance(k, pikepdf.Dictionary) and "/S" in k:
+                        walk(k)
+
+            walk(pdf.Root.StructTreeRoot)
+            self.assertEqual(len(found), len(set(found)))
+            names = pdf.Root.StructTreeRoot.IDTree.Names
+            self.assertEqual(sorted(str(names[i]) for i in range(0, len(names), 2)), sorted(found))
+
+    def test_no_idtree_is_added_when_no_id_changes(self):
+        pdf_builder.make_pdf(self.src, [self.GRID])
+        self.run_apply({"header_rows": 1})
+        with pikepdf.open(self.out) as pdf:
+            self.assertNotIn("/IDTree", pdf.Root.StructTreeRoot)
 
     def test_nested_table_in_cell_gets_its_own_id(self):
         pdf_builder.make_pdf(self.src, [self.GRID])

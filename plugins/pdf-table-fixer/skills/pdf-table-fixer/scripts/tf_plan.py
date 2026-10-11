@@ -33,7 +33,8 @@ def _ref(text):
         return None
 
 
-def resolve(tid, table, tp):
+def resolve(tid, table, tp, taken=None):
+    taken = set(taken or ())
     errors = []
     rows = table["rows"]
     nrows = len(rows)
@@ -46,10 +47,12 @@ def resolve(tid, table, tp):
         if key not in TABLE_KEYS:
             err(f"unknown key '{key}'")
     expect = tp.get("expect")
-    if expect is not None:
-        if not isinstance(expect, dict) or (expect.get("rows"), expect.get("cells")) != (nrows, ncells):
-            err(f"expect {expect} does not match this file ({nrows} rows, {ncells} cells); is the plan for another file?")
-            return None, errors
+    if expect is None:
+        err('expect is required: copy {"rows": rows_count, "cells": cells_count} for this table from `inspect --json`')
+        return None, errors
+    if not isinstance(expect, dict) or (expect.get("rows"), expect.get("cells")) != (nrows, ncells):
+        err(f"expect {expect} does not match this file ({nrows} rows, {ncells} cells); is the plan for another file?")
+        return None, errors
 
     span = {(r, i): (c["rowspan"], c["colspan"]) for r, row in enumerate(rows) for i, c in enumerate(row["cells"])}
     for s in tp.get("spans", []):
@@ -67,7 +70,7 @@ def resolve(tid, table, tp):
     if not _perm(row_order, nrows):
         err(f"row_order must list each row 0..{nrows - 1} exactly once")
         row_order = list(range(nrows))
-    elif any(rows[row_order[p]]["section"] != rows[p]["section"] for p in range(nrows)):
+    elif any(rows[row_order[p]]["_parent"].objgen != rows[p]["_parent"].objgen for p in range(nrows)):
         err("row_order moves a row out of its THead/TBody/TFoot section")
         row_order = list(range(nrows))
     cell_order = {}
@@ -122,6 +125,9 @@ def resolve(tid, table, tp):
         if d not in attrs:
             err(f"headers entry '{dep}' is not a cell")
             continue
+        if targets == []:
+            attrs[d]["headers"] = None  # an empty list clears the cell's Headers
+            continue
         ids = []
         for t in targets if isinstance(targets, list) else []:
             ref = _ref(t)
@@ -131,17 +137,35 @@ def resolve(tid, table, tp):
                 err(f"headers entry '{dep}' points at '{t}', which is not a header cell after this plan")
             else:
                 if not attrs[ref]["id"]:
-                    attrs[ref]["id"] = f"{tid}-h{ref[0]}-{ref[1]}"
+                    base = new = f"{tid}-h{ref[0]}-{ref[1]}"
+                    n = 1
+                    while new in taken:
+                        n += 1
+                        new = f"{base}-{n}"
+                    attrs[ref]["id"] = new
+                    taken.add(new)
                 ids.append(attrs[ref]["id"])
         if ids:
             attrs[d]["headers"] = ids
+    by_id = {a["id"]: ref for ref, a in attrs.items() if a["id"]}
+    for ref, a in attrs.items():
+        for hid in a["headers"] or []:
+            target = by_id.get(hid)
+            if target is not None and attrs[target]["tag"] != "TH":
+                err(f"cell {ref[0]}.{ref[1]} keeps Headers pointing at '{hid}' (cell {target[0]}.{target[1]}), "
+                    f"which is no longer a header cell; clear it with \"headers\": {{\"{ref[0]}.{ref[1]}\": []}}")
     if errors:
         return None, errors
     return {"arranged": arranged, "attrs": attrs, "row_order": row_order, "cell_order": cell_order}, errors
 
 
-def check_plan(plan, tables):
+def check_plan(plan, tables, taken=None):
+    """taken: every /ID already used in the document, so minted ids never collide."""
     errors, layouts = [], {}
+    taken = set(taken or ())
+    for t in tables:
+        for row in t["rows"]:
+            taken.update(c["id"] for c in row["cells"] if c["id"])
     extra = set(plan) - {"tables"}
     if extra or not isinstance(plan.get("tables"), dict):
         errors.append("a plan is an object with only a 'tables' key holding one entry per table id")
@@ -153,10 +177,11 @@ def check_plan(plan, tables):
         elif not isinstance(tp, dict):
             errors.append(f"{tid}: the entry must be an object")
         else:
-            layout, errs = resolve(tid, by_id[tid], tp)
+            layout, errs = resolve(tid, by_id[tid], tp, taken)
             errors += errs
             if layout is not None:
                 layouts[tid] = layout
+                taken.update(a["id"] for a in layout["attrs"].values() if a["id"])
     return layouts, errors
 
 

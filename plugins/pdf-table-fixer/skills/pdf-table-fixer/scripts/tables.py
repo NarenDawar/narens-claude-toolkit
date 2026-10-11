@@ -65,7 +65,7 @@ def _load(path, plan_path):
     pdf = tf_struct.open_checked(path)
     try:
         tables = tf_struct.read_tables(pdf)
-        layouts, errors = tf_plan.check_plan(tf_plan.load_plan(plan_path), tables)
+        layouts, errors = tf_plan.check_plan(tf_plan.load_plan(plan_path), tables, taken=tf_struct.all_ids(pdf))
     except Exception:
         pdf.close()
         raise
