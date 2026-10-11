@@ -64,5 +64,30 @@ class InspectTests(unittest.TestCase):
         self.assertIn("no tables", out)
 
 
+@unittest.skipUnless(pdf_builder.HAVE_PIKEPDF, "pikepdf not installed")
+class PlanDiffTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name) / "t.pdf"
+        self.plan = Path(self.tmp.name) / "plan.json"
+        pdf_builder.make_pdf(self.path, [[["Name", "Qty"], ["Apple", "3"]]])
+
+    def test_plan_diff_prints_changes_and_writes_nothing(self):
+        before = self.path.read_bytes()
+        self.plan.write_text(json.dumps({"tables": {"t1": {"header_rows": 1}}}), encoding="utf-8")
+        code, out, _ = run(["plan-diff", str(self.path), "--plan", str(self.plan)])
+        self.assertEqual(code, 0)
+        self.assertIn("t1", out)
+        self.assertIn("TD->TH", out)
+        self.assertEqual(self.path.read_bytes(), before)
+
+    def test_bad_plan_exits_2_with_one_line_per_error(self):
+        self.plan.write_text(json.dumps({"tables": {"t7": {}}}), encoding="utf-8")
+        code, out, err = run(["plan-diff", str(self.path), "--plan", str(self.plan)])
+        self.assertEqual((code, out), (2, ""))
+        self.assertIn("t7", err)
+
+
 if __name__ == "__main__":
     unittest.main()

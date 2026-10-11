@@ -57,6 +57,45 @@ def _inspect(path, as_json):
     return 0
 
 
+def _load(path, plan_path):
+    """Open the PDF and check the plan; returns (pdf, tables, layouts) or None after printing the errors."""
+    import tf_plan
+    import tf_struct
+
+    pdf = tf_struct.open_checked(path)
+    try:
+        tables = tf_struct.read_tables(pdf)
+        layouts, errors = tf_plan.check_plan(tf_plan.load_plan(plan_path), tables)
+    except Exception:
+        pdf.close()
+        raise
+    if errors:
+        for line in errors:
+            print(line, file=sys.stderr)
+        pdf.close()
+        return None
+    return pdf, tables, layouts
+
+
+def _plan_diff(path, plan_path):
+    import tf_plan
+
+    loaded = _load(path, plan_path)
+    if loaded is None:
+        return 2
+    pdf, tables, layouts = loaded
+    try:
+        by_id = {t["id"]: t for t in tables}
+        for tid, layout in layouts.items():
+            lines = tf_plan.diff(by_id[tid], layout)
+            print(f"{tid}: " + ("no changes" if not lines else f"{len(lines)} change{'s' if len(lines) != 1 else ''}"))
+            for line in lines:
+                print("  " + line)
+    finally:
+        pdf.close()
+    return 0
+
+
 def main(argv=None):
     try:
         import pikepdf  # noqa: F401
@@ -70,10 +109,15 @@ def main(argv=None):
     p = sub.add_parser("inspect")
     p.add_argument("pdf")
     p.add_argument("--json", action="store_true")
+    p = sub.add_parser("plan-diff")
+    p.add_argument("pdf")
+    p.add_argument("--plan", required=True)
     args = ap.parse_args(argv)
     try:
         if args.cmd == "inspect":
             return _inspect(args.pdf, args.json)
+        if args.cmd == "plan-diff":
+            return _plan_diff(args.pdf, args.plan)
     except tf_struct.Refusal as exc:
         print(str(exc), file=sys.stderr)
         return 2
