@@ -175,7 +175,7 @@ def diff(table, layout):
             if a["tag"] != c["tag"]:
                 ch.append(f"{c['tag']}->{a['tag']}")
             if a["scope"] != c["scope"]:
-                ch.append(f"scope {c['scope'] or '-'}->{a['scope'] or '-'}")
+                ch.append(f"scope {c['scope'] or 'none'}->{a['scope'] or 'none'}")
             if a["rowspan"] != c["rowspan"]:
                 ch.append(f"rowspan {c['rowspan']}->{a['rowspan']}")
             if a["colspan"] != c["colspan"]:

@@ -13,6 +13,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Install pikepdf for the pdf-table-fixer tests
+        run: python -m pip install pikepdf
       - name: Unit tests
         run: python -m unittest discover -s tests -v
       - name: Validate plugins and catalog
