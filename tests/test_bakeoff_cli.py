@@ -223,6 +223,13 @@ class RunTests(Base):
         data = json.loads(self.results.read_text(encoding="utf-8"))
         self.assertIn("in a row", data["aborted"])
         self.assertIn("aborted", (out + err).lower())
+        
+    def test_a_misnamed_judge_model_is_refused_before_anything_runs(self):
+        err = io.StringIO()
+        with contextlib.redirect_stderr(err):
+            code = bakeoff.main(["run", "--agent", "any", "--cases", "missing.json", "--judge-model", "opuss"], claude=["unused"])
+        self.assertEqual(code, 2)
+        self.assertIn("--judge-model 'opuss'", err.getvalue())
 
 
 class DecideTests(Base):
