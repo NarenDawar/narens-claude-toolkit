@@ -12,6 +12,7 @@ from bk_agents import DEFAULT_READ_TOOLS, DEFAULT_WRITE_TOOLS, READ_ONLY_TOOLS
 CONSECUTIVE_CLI_FAILURES = 5
 MAX_KEPT_OUTPUT = 20000
 JUDGE_PROMPT_LIMIT = 8000
+JUDGE_CALL_FAILED = "the judge call failed"
 
 
 class RunnerError(Exception):
@@ -168,8 +169,11 @@ def judge(claude, model, rubric, prompt, output, timeout, max_usd=0.5):
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
     info = parse_output(out) if not timed_out else None
-    if info is None or classify(info, code, timed_out) is not None:
-        return None, "the judge call failed", info["cost"] if info else None
+    kind = classify(info, code, timed_out)
+    if info is None or kind is not None:
+        detail = " ".join(info["text"].split())[:200] if info and info["text"] else ""
+        reason = f"{JUDGE_CALL_FAILED} ({kind}{': ' + detail if detail else ''})"
+        return None, reason, info["cost"] if info else None
     verdict = bk_cases.first_json_object(info["text"])
     if verdict is None or not isinstance(verdict.get("pass"), bool):
         return None, "the judge reply was not understood", info["cost"]
@@ -202,6 +206,7 @@ def _one_run(claude, definition, case, base_dir, model, number, agents_file, opt
             record["judgeCost"] = judge_cost
             if verdict is None:
                 record["kind"] = "judge"
+                record["judgeError"] = reason
                 passed = False
             else:
                 record["judge"] = {"passed": verdict, "reason": reason}
@@ -224,6 +229,7 @@ def execute(claude, definition, cases_data, base_dir, models, runs, options, log
     entries = [] if entries is None else entries
     spent = 0.0
     streak = 0
+    judge_checked = False
     try:
         with open(agents_file, "w", encoding="utf-8") as handle:
             handle.write(bk_agents.agents_json(definition))
@@ -245,6 +251,14 @@ def execute(claude, definition, cases_data, base_dir, models, runs, options, log
                     else:
                         streak = 0
                     log(f"{model} {case['id']} run {number}: {'pass' if record['passed'] else 'fail'}" + (f" ({record['kind']})" if record["kind"] else ""))
+                    judge_error = record.get("judgeError") or ""
+                    if judge_error.startswith(JUDGE_CALL_FAILED) and not judge_checked:
+                        return entries, (
+                            f"the first judge call with --judge-model {options['judge_model']} failed, "
+                            f"so every rubric case would fail: {judge_error}"
+                        )
+                    if record.get("judge") is not None or judge_error:
+                        judge_checked = True
                     if streak >= CONSECUTIVE_CLI_FAILURES:
                         return entries, f"claude failed {CONSECUTIVE_CLI_FAILURES} runs in a row (not a check failure); stopped. Check that claude is installed and logged in"
         return entries, None
