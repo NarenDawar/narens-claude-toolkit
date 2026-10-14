@@ -46,7 +46,8 @@ def write_export(cues, picks, out_dir):
     with open(json_path, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(json.dumps({"clips": rows}, indent=2, ensure_ascii=False) + "\n")
     csv_path = out_dir / "clips.csv"
-    with open(csv_path, "w", encoding="utf-8", newline="") as fh:
+    # A UTF-8 BOM makes Excel on Windows read the file as UTF-8, not the local code page.
+    with open(csv_path, "w", encoding="utf-8-sig", newline="") as fh:
         writer = csv.writer(fh)
         writer.writerow(CSV_COLUMNS)
         for r in rows:

@@ -103,6 +103,37 @@ class ParseTests(unittest.TestCase):
         with self.assertRaisesRegex(t.TranscriptError, "before"):
             t.parse_file(self.write("a.srt", text))
 
+    def test_a_cue_with_an_unreadable_timing_line_is_an_error_not_a_silent_drop(self):
+        text = (
+            "1\n00:00:00,000 --> 00:00:10,000\nOne.\n\n"
+            "2\n00:00:10,000 -> 00:00:20,000\nTwo has a typo arrow.\n\n"
+            "3\n00:00:30,000 --> 00:00:40,000\nThree.\n"
+        )
+        with self.assertRaisesRegex(t.TranscriptError, "timing"):
+            t.parse_file(self.write("a.srt", text))
+
+    def test_a_blank_line_inside_a_cue_is_an_error_not_a_silent_drop(self):
+        text = (
+            "1\n00:00:00,000 --> 00:00:10,000\nFirst half.\n\nSecond half.\n\n"
+            "2\n00:00:10,000 --> 00:00:20,000\nTwo.\n"
+        )
+        with self.assertRaisesRegex(t.TranscriptError, "timing"):
+            t.parse_file(self.write("a.srt", text))
+
+    def test_times_without_milliseconds_are_read(self):
+        text = "1\n00:00:20 --> 00:00:30\nNo millis.\n\n2\n00:31 --> 00:40\nShort.\n"
+        cues = t.parse_file(self.write("a.srt", text))
+        self.assertEqual([(c["start"], c["end"]) for c in cues], [(20.0, 30.0), (31.0, 40.0)])
+
+    def test_a_vtt_header_with_no_blank_line_does_not_swallow_the_first_cue(self):
+        text = "WEBVTT\n00:00.000 --> 00:04.000\nFirst.\n\n00:05.000 --> 00:08.000\nSecond.\n"
+        cues = t.parse_file(self.write("a.vtt", text))
+        self.assertEqual([c["text"] for c in cues], ["First.", "Second."])
+
+    def test_stray_cue_numbers_and_blank_blocks_are_not_errors(self):
+        text = "1\n00:00:00,000 --> 00:00:10,000\nOne.\n\n   \n\n2\n"
+        self.assertEqual(len(t.parse_file(self.write("a.srt", text))), 1)
+
     def test_bad_json_shapes_are_errors_not_tracebacks(self):
         bad = [
             "{not json",

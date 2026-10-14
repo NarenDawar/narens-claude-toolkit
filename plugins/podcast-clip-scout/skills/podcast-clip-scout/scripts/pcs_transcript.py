@@ -10,7 +10,7 @@ class TranscriptError(Exception):
     """A transcript that cannot be read; the message is one line for the user."""
 
 
-_TIME = r"(?:(\d+):)?(\d{1,2}):(\d{2})[.,](\d{1,3})"
+_TIME = r"(?:(\d+):)?(\d{1,2}):(\d{2})(?:[.,](\d{1,3}))?"
 _TIMING = re.compile(rf"^\s*{_TIME}\s*-->\s*{_TIME}(?:\s.*)?$")
 _TAG = re.compile(r"<[^>]*>")
 _VOICE = re.compile(r"<v(?:\.[^\s>]*)?\s+([^>]+)>")
@@ -19,7 +19,7 @@ _SKIP_BLOCK = re.compile(r"^(WEBVTT|NOTE|STYLE|REGION)(\s|$)")
 
 def _ms(hours, minutes, seconds, fraction):
     whole = (int(hours or 0) * 60 + int(minutes)) * 60 + int(seconds)
-    return whole * 1000 + int(fraction.ljust(3, "0"))
+    return whole * 1000 + int((fraction or "").ljust(3, "0"))
 
 
 def _cue(n, start_ms, end_ms, text, speaker):
@@ -29,13 +29,16 @@ def _cue(n, start_ms, end_ms, text, speaker):
 def _parse_blocks(text):
     """SRT and VTT share one shape: blocks separated by blank lines, a timing line, then text."""
     text = text.replace("\r\n", "\n").replace("\r", "\n")
-    found = []
+    found, orphans = [], []
     for block in re.split(r"\n\s*\n", text):
-        lines = block.strip("\n").split("\n")
-        if not lines or _SKIP_BLOCK.match(lines[0].strip()):
+        if not block.strip():
             continue
+        lines = block.strip("\n").split("\n")
         timing_at = next((i for i, line in enumerate(lines) if _TIMING.match(line)), None)
         if timing_at is None:
+            # Headers, notes and a stray cue number are fine; anything else would lose speech.
+            if not _SKIP_BLOCK.match(lines[0].strip()) and not all(l.strip().isdigit() for l in lines):
+                orphans.append(" ".join(block.split())[:60])
             continue
         g = _TIMING.match(lines[timing_at]).groups()
         start_ms, end_ms = _ms(*g[:4]), _ms(*g[4:])
@@ -47,6 +50,11 @@ def _parse_blocks(text):
         clean = " ".join(html.unescape(_TAG.sub("", raw)).split())
         if clean:
             found.append((start_ms, end_ms, clean, speaker))
+    if orphans and found:
+        raise TranscriptError(
+            f"{len(orphans)} block(s) have no readable timing line, so their text would be "
+            f"dropped; first: {orphans[0]!r}"
+        )
     return found
 
 

@@ -34,7 +34,7 @@ class ExportTests(unittest.TestCase):
         out = self.dir / "a" / "b"
         csv_path, json_path = x.write_export(self.cues, pcs_builder.ideal_picks(), out)
         self.assertEqual((csv_path.name, json_path.name), ("clips.csv", "clips.json"))
-        with open(csv_path, newline="", encoding="utf-8") as fh:
+        with open(csv_path, newline="", encoding="utf-8-sig") as fh:
             rows = list(csv.DictReader(fh))
         self.assertEqual(list(rows[0]), x.CSV_COLUMNS)
         self.assertEqual(rows[0]["start"], "00:00:10.000")
@@ -42,6 +42,11 @@ class ExportTests(unittest.TestCase):
         self.assertEqual(rows[1]["caption"], "Stop guessing. Call ten users a week and shut up.")
         data = json.loads(json_path.read_text(encoding="utf-8"))
         self.assertEqual(data["clips"][0]["reasons"]["hook"], "first: hook")
+
+    def test_csv_starts_with_a_utf8_bom_so_excel_reads_non_ascii_captions(self):
+        csv_path, json_path = x.write_export(self.cues, pcs_builder.ideal_picks(), self.dir)
+        self.assertTrue(csv_path.read_bytes().startswith(b"\xef\xbb\xbf"))
+        self.assertFalse(json_path.read_bytes().startswith(b"\xef\xbb\xbf"))
 
     def test_json_uses_lf_line_endings(self):
         _, json_path = x.write_export(self.cues, pcs_builder.ideal_picks(), self.dir)
@@ -52,7 +57,7 @@ class ExportTests(unittest.TestCase):
         picks["clips"][0]["caption"] = "=HYPERLINK(\"http://example.com\")"
         picks["clips"][1]["caption"] = "-1+1"
         csv_path, json_path = x.write_export(self.cues, picks, self.dir)
-        with open(csv_path, newline="", encoding="utf-8") as fh:
+        with open(csv_path, newline="", encoding="utf-8-sig") as fh:
             rows = list(csv.DictReader(fh))
         self.assertTrue(rows[0]["caption"].startswith("'="))
         self.assertTrue(rows[1]["caption"].startswith("'-"))
@@ -65,7 +70,7 @@ class ExportTests(unittest.TestCase):
         picks = pcs_builder.ideal_picks()
         picks["clips"][0]["caption"] = "café — 日本語"
         csv_path, _ = x.write_export(self.cues, picks, self.dir)
-        with open(csv_path, newline="", encoding="utf-8") as fh:
+        with open(csv_path, newline="", encoding="utf-8-sig") as fh:
             self.assertEqual(list(csv.DictReader(fh))[0]["caption"], "café — 日本語")
 
     def test_an_output_path_that_is_a_file_raises_oserror(self):
