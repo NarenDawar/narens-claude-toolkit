@@ -79,6 +79,29 @@ describe('escapeText', () => {
     expect(escapeText('', 10)).toBe('')
   })
 
+  test('zero-width and bidi characters become visible escapes', () => {
+    // A right-to-left override would otherwise draw the rest of the command
+    // reversed, so the band would not show what is about to run.
+    expect(escapeText('rm -rf \u202eetadpu/ tpa', 60)).toBe('rm -rf \\u202eetadpu/ tpa')
+    expect(escapeText('git\u200bpush', 40)).toBe('git\\u200bpush')
+    for (const code of [0x200b, 0x200c, 0x200d, 0x200e, 0x200f, 0x202a, 0x202b, 0x202c, 0x202d, 0x202e, 0x2066, 0x2067, 0x2068, 0x2069]) {
+      const escaped = escapeText(`a${String.fromCharCode(code)}b`, 40)
+      expect(escaped).toBe(`a\\u${code.toString(16)}b`)
+    }
+  })
+
+  test('an escaped bidi character still counts toward the cut', () => {
+    // The escape is six characters wide: a label must not grow past max
+    // just because the text carried one.
+    const cut = escapeText('\u202e'.repeat(20), 10)
+    expect(Array.from(cut).length).toBe(10)
+    expect(cut.endsWith('…')).toBe(true)
+  })
+
+  test('characters that only look unusual are left alone', () => {
+    expect(escapeText('cafe\u0301 — naïve 日本語', 40)).toBe('cafe\u0301 — naïve 日本語')
+  })
+
   test('a cut never splits an emoji', () => {
     const text = '\u{1F600}'.repeat(20)
     const cut = escapeText(text, 5)
