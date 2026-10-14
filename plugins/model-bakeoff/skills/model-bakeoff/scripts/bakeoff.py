@@ -56,17 +56,22 @@ def _safe(value):
     return "".join(out)
 
 
+def _model(model, flag="model"):
+    try:
+        if model == "inherit":
+            raise AgentError("inherit is not a model")
+        agent_edit.validate_model(model)
+    except AgentError:
+        raise UsageError(f"{flag} {_safe(model)!r} is not an alias ({', '.join(ALIASES)}) or a full model id (claude-...)") from None
+    return model
+
+
 def _models(text):
     models = [part.strip() for part in text.split(",") if part.strip()]
     if not models:
         raise UsageError("--models needs at least one model")
     for model in models:
-        try:
-            if model == "inherit":
-                raise AgentError("inherit is not a model")
-            agent_edit.validate_model(model)
-        except AgentError:
-            raise UsageError(f"model {_safe(model)!r} is not an alias ({', '.join(ALIASES)}) or a full model id (claude-...)") from None
+        _model(model)
     return list(dict.fromkeys(models))
 
 
@@ -263,6 +268,7 @@ def cmd_estimate(args, claude):
 
 def cmd_run(args, claude):
     _check_numbers(args)
+    _model(args.judge_model, "--judge-model")
     claude_cmd = _claude(claude)
     definition, _ = bk_agents.load_definition(args.agent, _dirs(args))
     data, sha, base = _load_cases_for(args.agent, args.cases)

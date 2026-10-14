@@ -355,6 +355,53 @@ class ProbeTests(Base):
         argv = self.calls()[0]["argv"]
         self.assertEqual(argv[argv.index("--tools") + 1], "")
 
+import sys as _sys
+from pathlib import Path as _Path
+from unittest import mock
+
+_SCRIPTS = _Path(__file__).resolve().parents[1] / "plugins" / "model-bakeoff" / "skills" / "model-bakeoff" / "scripts"
+if str(_SCRIPTS) not in _sys.path:
+    _sys.path.insert(0, str(_SCRIPTS))
+import bk_runner
+
+def _judged_record(case_id, verdict=None, judge_error=None):
+    """A fake result of one run, as _one_run would return it."""
+    record = {
+        "case": case_id, "run": 1, "passed": verdict is True, "kind": "judge" if judge_error else None,
+        "checks": [], "judge": None if verdict is None else {"passed": verdict, "reason": "ok"},
+        "cost": 0.01, "judgeCost": None, "tokens": None, "turns": None, "durationMs": None, "resolvedId": None,
+    }
+    if judge_error:
+        record["judgeError"] = judge_error
+    return record
+
+
+class JudgeAbortTests(unittest.TestCase):
+    """Issue #70: a judge model that cannot run stops the bake-off with the cause."""
+
+    def _execute_with(self, records):
+        cases = {"cases": [{"id": f"c{i}", "rubric": "be right"} for i in range(len(records))]}
+        options = {"max_total_usd": 100.0, "max_run_usd": 1.0, "judge_model": "opuss"}
+        with mock.patch.object(bk_runner, "_one_run", side_effect=records), \
+             mock.patch.object(bk_runner.bk_agents, "agents_json", return_value="{}"):
+            return bk_runner.execute(["claude"], {"name": "a", "tools": []}, cases, ".", ["haiku"], 1, options, lambda line: None)
+
+    def test_a_first_judge_call_that_cannot_run_aborts_with_the_cause(self):
+        failed = f"{bk_runner.JUDGE_CALL_FAILED} (cli: model opuss not found)"
+        entries, aborted = self._execute_with([_judged_record("c0", judge_error=failed), _judged_record("c1", verdict=True)])
+        self.assertIn("--judge-model opuss", aborted)
+        self.assertIn("model opuss not found", aborted)
+        self.assertEqual(len(entries[0]["runs"]), 1)
+
+    def test_a_later_judge_call_failure_is_recorded_not_aborted(self):
+        failed = f"{bk_runner.JUDGE_CALL_FAILED} (timeout)"
+        entries, aborted = self._execute_with([_judged_record("c0", verdict=True), _judged_record("c1", judge_error=failed)])
+        self.assertIsNone(aborted)
+        self.assertEqual(entries[0]["runs"][1]["kind"], "judge")
+
+    def test_a_judge_reply_that_is_not_understood_does_not_abort(self):
+        entries, aborted = self._execute_with([_judged_record("c0", judge_error="the judge reply was not understood")])
+        self.assertIsNone(aborted)
 
 if __name__ == "__main__":
     unittest.main()
