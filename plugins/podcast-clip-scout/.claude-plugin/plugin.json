@@ -1,0 +1,13 @@
+{
+  "name": "podcast-clip-scout",
+  "version": "0.1.0",
+  "description": "Use when the user has a timestamped podcast or video transcript and wants the best short clips picked from it (for example 'find the best clips in this episode', 'which moments would work as shorts', 'pick reel candidates from this transcript').",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/podcast-clip-scout",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills", "podcast", "video", "clips"]
+}

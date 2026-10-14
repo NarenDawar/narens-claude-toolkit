@@ -1,6 +1,6 @@
 # Podcast Clip Scout: design
 
-Status: draft, awaiting review
+Status: approved
 Date: 2026-10-13
 
 ## Purpose
@@ -29,9 +29,11 @@ plugins/podcast-clip-scout/
   README.md
   skills/podcast-clip-scout/
     SKILL.md
-    scripts/transcript.py
+    scripts/pcs_transcript.py
+    scripts/pcs_picks.py
+    scripts/pcs_export.py
     scripts/clips.py
-tests/test_pcs_transcript.py, test_pcs_check.py, test_pcs_export.py, test_pcs_cli.py
+tests/pcs_builder.py, test_pcs_transcript.py, test_pcs_picks.py, test_pcs_export.py, test_pcs_cli.py
 ```
 
 Plus a marketplace entry, a CHANGELOG entry and the regenerated `README.md` and `llms.txt`. No CI dependency change.
@@ -47,18 +49,18 @@ Plus a marketplace entry, a CHANGELOG entry and the regenerated `README.md` and 
 
 Long episodes: Claude reads the cues in cue-range chunks, collects candidates from each, and ranks across all of them. The helper sees only the final list.
 
-## transcript.py
+## pcs_transcript.py (parser)
 
 Parses to a list of cues `{n, start, end, text, speaker}`; `n` is 1-based.
 
 - SRT and VTT, including VTT cue settings, `<v Speaker>` tags and inline tags, a BOM, and CRLF line endings.
-- JSON: a list of `{start, end, text}` segments (seconds as numbers), optionally with `speaker`.
+- JSON: a list of `{start, end, text}` segments (seconds as numbers), optionally with `speaker`, or an object with that list under `"segments"` (the shape Whisper writes).
 - Errors raise `TranscriptError` with a one-line message: unreadable file, empty file, no cues found, an end time before a start time.
 - Overlapping cues are kept as they are.
 
-## clips.py
+## clips.py (CLI) and pcs_picks.py / pcs_export.py (check and export logic)
 
-`cues FILE` prints `n  HH:MM:SS.mmm  text` per cue.
+`cues FILE [--from N] [--to M]` prints `n  HH:MM:SS.mmm  text` per cue, optionally only cues N to M inclusive (a range past the end is clipped; the long-episode chunks use this).
 
 `check FILE --picks picks.json [--min 20] [--max 60] [--max-caption 150]` reports every problem, not only the first.
 
