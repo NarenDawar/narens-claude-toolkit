@@ -1,0 +1,13 @@
+{
+  "name": "human-writing",
+  "version": "0.1.0",
+  "description": "Use when the user wants words written or rewritten in a human, personal voice, including short casual messages: a Slack note, newsletter intro, cover letter, email, post, bio, speech or story, with or without a pasted voice sample. Also use when a draft sounds fake, robotic, generic, corporate or \"ChatGPT-ish\", even if they wrote it with an AI, and as a final pass on anything Claude drafted that the user will send or publish as themselves. Skip code, data, translation, proofreading-only requests, legal text, and anything whose exact wording must stay unchanged.",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/human-writing",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills"]
+}
