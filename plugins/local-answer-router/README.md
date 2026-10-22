@@ -44,6 +44,8 @@ The mod watches the Bash commands the model runs. When one is a test run (`pytes
 
 ## Limits
 
+Inspection-only modes (`pytest --version`, `pytest --collect-only`, `cargo test --no-run`, `jest --listTests` and supported runner help/list flags) clear the saved result. Their successful exit does not mean tests ran, so an older pass cannot answer the next test-status question.
+
 - **The model does not see these exchanges.** A locally answered prompt never enters the session, so Claude will not know you asked. Use `ask:` when you want the question in the conversation.
 - **It saves tokens only for the listed questions, typed as written.** Everything else costs what it always did.
 - **The test answer is not live.** It reports the last run the model made, not tests you ran in your own terminal, and files may have changed since.
