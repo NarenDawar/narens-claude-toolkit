@@ -19,7 +19,7 @@ Platform payouts, policies, APIs and algorithms change. Anything older than abou
 
 ## 3. The payer test
 
-Name who pays, for what, and find proof one real instance exists: a listing, a price page, a public payout, a review that mentions paying. If you cannot find any payer, the idea is demand-shaped but not money-shaped. Report it that way or kill it.
+Name who pays, for what, and find proof one real instance exists: a public payout, a buyer's post offering a price, a review that mentions paying. A seller's price list or listing shows what is asked, not what is paid; say which you found. An idea with no instance of a buyer cannot be `Survives`. If you cannot find any payer, the idea is demand-shaped but not money-shaped. Report it that way or kill it.
 
 ## 4. Competitor search
 
@@ -27,7 +27,7 @@ Do this for every survivor, not a sample, and record the searches you ran for ea
 
 ## 5. Platform risk
 
-Read the current terms, developer policy or API rules for the exact part the idea depends on. Look for: banned uses, required approvals, rate limits, revenue share, the platform building this itself, and a history of cutting off third parties. Report the dependency and how bad losing it would be.
+Read the current terms, developer policy or API rules for the exact part the idea depends on. Look for: banned uses, required approvals, rate limits, revenue share, the platform building this itself, and a history of cutting off third parties. Report the dependency and how bad losing it would be. If the platform's terms page cannot be read, use its developer docs and policy announcements, and mark platform risk partial.
 
 ## 6. Reality check on the numbers
 
