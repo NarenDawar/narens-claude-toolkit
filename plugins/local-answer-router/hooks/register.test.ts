@@ -307,7 +307,10 @@ describe('local-answer-router registration', () => {
   test('a test run it cannot read cleanly clears the record instead of keeping an older pass', async ($, on) => {
     const store = withState(on as never)
     on('tool.call', () => BASH_OK as never)
-    for (const command of ['python -m pytest -q 2>&1 | tail -20', 'uv run pytest', 'npx jest | cat']) {
+    for (const command of [
+      'python -m pytest -q 2>&1 | tail -20', 'uv run pytest', 'npx jest | cat',
+      'pytest --version', 'pytest --collect-only', 'cargo test --no-run', 'jest --listTests',
+    ]) {
       await $.tool.call({ tool: 'Bash', command: 'pytest -q' })
       expect(store.value).not.toBe(null)
       await $.tool.call({ tool: 'Bash', command })

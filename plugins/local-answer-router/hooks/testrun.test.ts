@@ -97,6 +97,29 @@ describe('observe', () => {
   const NOW = 1_700_000_000_000
   const record = (command: string, failed: boolean) => ({ kind: 'record', record: { command, failed, at: NOW } })
 
+  test('inspection-only runner flags clear the saved result', () => {
+    const commands = [
+      'pytest --version', 'pytest -V', 'pytest --help', 'pytest -h',
+      'pytest --collect-only', 'pytest --collectonly', 'pytest --co -q',
+      'python3 -m pytest --collect-only', 'cd app && pytest --collect-only',
+      "pytest '--collect-only'", 'pytest "--collect-only"', 'pytest --collect-only=true',
+      'cargo test --no-run', 'cargo +nightly test --no-run',
+      'cargo test -- --list', 'cargo test --help',
+      'jest --listTests', 'npx jest --listTests', 'npx jest --showConfig', 'jest --listTests=true',
+      'vitest --version', 'go test -list TestName ./...', 'dotnet test --list-tests',
+    ]
+    for (const command of commands) {
+      expect(isTestCommand(command)).toBe(false)
+      expect(observe(command, false, { isError: false }, NOW)).toEqual({ kind: 'clear' })
+    }
+  })
+
+  test('a flag belonging to another runner is not blocked', () => {
+    expect(isTestCommand('pytest -k listTests')).toBe(true)
+    expect(isTestCommand('pytest tests/test_showConfig.py')).toBe(true)
+    expect(isTestCommand('go test -run TestList ./...')).toBe(true)
+  })
+
   test('a passing run is recorded as not failed', () => {
     expect(observe('pytest -q', false, { isError: false }, NOW)).toEqual(record('pytest -q', false))
     expect(observe('pytest -q', false, {}, NOW)).toEqual(record('pytest -q', false))

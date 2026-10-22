@@ -25,6 +25,18 @@ const ASSIGNMENTS = /^(?:[A-Za-z_][A-Za-z0-9_]*=\S*\s+)+/
 const CD = /^cd(?: |$)/
 const MAX_COMMAND = 200
 
+// These modes inspect the runner or collect/list tests; a zero exit code is not
+// evidence that tests ran. Keep flags runner-specific so unrelated arguments
+// (for example pytest -k listTests) do not turn a genuine run into an inspection.
+const INSPECTION_MODES: readonly [RegExp, RegExp][] = [
+  [/^(?:pytest|py\.test|python3?(?:\.\d+)? -m pytest)(?: |$)/, /(?:^|\s)--(?:collect-only|collectonly|co)(?:=|\s|$)/],
+  [/^cargo(?: \+\S+)? test(?: |$)/, /(?:^|\s)--(?:no-run|list)(?:=|\s|$)/],
+  [/^(?:npx )?jest(?: |$)/, /(?:^|\s)--(?:listTests|showConfig|clearCache)(?:=|\s|$)/],
+  [/^go test(?: |$)/, /(?:^|\s)-list(?:=|\s|$)/],
+  [/^dotnet test(?: |$)/, /(?:^|\s)--list-tests(?:=|\s|$)/],
+]
+const INFO_FLAG = /(?:^|\s)(?:--help|--version|-h|-V)(?:=|\s|$)/
+
 // Fields of a Bash result that say the command did not run to its end in the foreground.
 const NOT_FINISHED = ['backgroundTaskId', 'backgroundedByUser', 'timedOutAfterMs', 'interrupted'] as const
 
@@ -41,6 +53,10 @@ export const isTestCommand = (command: string): boolean => {
   const segments = cleaned.split('\u0000').map(segment => segment.trim())
   const last = segments[segments.length - 1].replace(ASSIGNMENTS, '')
   if (!RUNNERS.some(runner => runner.test(last))) {
+    return false
+  }
+  const options = last.replace(/['"]/g, '')
+  if (INFO_FLAG.test(options) || INSPECTION_MODES.some(([runner, flags]) => runner.test(last) && flags.test(options))) {
     return false
   }
   return segments.slice(0, -1).every(segment => CD.test(segment))
