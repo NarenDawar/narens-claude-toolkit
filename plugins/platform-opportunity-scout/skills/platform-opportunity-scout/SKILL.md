@@ -7,7 +7,7 @@ description: "Use when the user names a platform or medium (Roblox, YouTube, Ins
 
 ## Overview
 
-Finds business ideas on or around one platform, then tries to kill each one before recommending it. Ideas are cheap; the value is in the ones that survive. Everything you report must trace to a source you actually opened this session. Memory is a source of hypotheses, never of facts.
+Finds business ideas on or around one platform, then tries to kill each one before recommending it. Ideas are cheap; the value is in the ones that survive. Everything you report must trace to a source you actually opened this session. Memory is a source of hypotheses, never of facts. A search result, including its summary, is a lead and not a source: only a page you opened counts as one.
 
 ## Setup
 
@@ -19,7 +19,7 @@ Take the platform from the user. Do not interrogate. State these defaults in one
 2. **Generate candidates** with the lenses in `references/lenses.md`. Aim for 10 to 15, across all three kinds: **native** (a game, channel, shop or account on the platform), **picks-and-shovels** (a tool or service sold to people who earn on the platform), and **arbitrage** (moving something between platforms or audiences). Picks-and-shovels is usually where a solo founder wins, so do not let it get crowded out by "make a popular thing".
 3. **Gather evidence** for each candidate: who pays, how much, how many of them, what they use today, and what they complain about in their own words (forums, subreddits, app and tool reviews, creator Discords, job boards, freelance listings).
 4. **Cut to 3 to 5** by fit with the user's constraints and by evidence strength. Drop the rest without ceremony.
-5. **Verify.** REQUIRED: follow `references/verification.md` for every survivor. This is not optional and not a formality. An idea that fails is reported as dead with the reason, which is useful output.
+5. **Verify.** REQUIRED: follow `references/verification.md` for every survivor, including its independent-verifier step. A task instruction not to delegate does not cancel this step; if you truly cannot run a separate verifier, say in the report that verification was not independent. This is not optional and not a formality. An idea that fails is reported as dead with the reason, which is useful output.
 6. **Report** in the format below.
 
 ## Report format
@@ -32,7 +32,7 @@ Lead with the ranked survivors, best first. For each:
 - **Strongest reason it could fail**, from the verification pass.
 - **Cheapest test** the user can run this week for under $100, with the result that would make them stop.
 
-Then a short **Killed** list: ideas that died in verification, one line each with why. Then say plainly what you could not check. Do not present `unverified` claims as findings.
+Then a short **Killed** list: ideas that died in verification, one line each with why. Then say plainly what you could not check, including any source that was blocked (Reddit and Discord often are); name the substitute you used or say there was none. Do not present `unverified` claims as findings.
 
 ## Common Mistakes
 

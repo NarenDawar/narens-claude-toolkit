@@ -6,11 +6,12 @@ Goal: try to kill each surviving idea, then report what is left. Run every check
 
 List every factual claim your case for the idea rests on: numbers, payouts, user counts, competitor facts, policy facts, "nobody does this". For each:
 
-- Open the source. Do not rely on a search snippet.
+- Open the page. A search result or its summary is a lead, not a source; a claim you never opened cannot be `confirmed`.
+- Prefer primary sources (the platform's docs, filings, announcements) over blogs and trend sites. Skip content-farm and SEO pages; if a number appears only there, it is `unverified`.
 - Record the URL and the publication or update date.
 - Re-find the number in a second, independent source. Two pages that both cite the same original are one source.
 - Mark it `confirmed`, `single-source` or `unverified`. A claim you could not source is `unverified`, however plausible.
-- Check for conflicts. If sources disagree, report the range and why, not the convenient one.
+- Check for conflicts. If sources disagree, report the range and why, not the convenient one. When two official sources disagree, the newer dated one is the lead; say the conflict exists.
 
 ## 2. Freshness
 
@@ -22,7 +23,7 @@ Name who pays, for what, and find proof one real instance exists: a listing, a p
 
 ## 4. Competitor search
 
-Search the idea at least three different ways: what it does, who it is for, and the words users would type. Check the platform's own marketplace or app listing, Product Hunt, GitHub, and the first two pages of web results. For each competitor found, note price, size, last update and the top complaints. A crowded space with unhappy users is a better sign than an empty one. An empty space needs an explanation: either it is new, or nobody pays.
+Do this for every survivor, not a sample. Search the idea at least three different ways: what it does, who it is for, and the words users would type. Check the platform's own marketplace or app listing, Product Hunt, GitHub, and the first two pages of web results. For each competitor found, note price, size, last update and the top complaints. A crowded space with unhappy users is a better sign than an empty one. An empty space needs an explanation: either it is new, or nobody pays.
 
 ## 5. Platform risk
 
