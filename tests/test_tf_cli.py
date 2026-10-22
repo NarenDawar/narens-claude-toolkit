@@ -91,6 +91,22 @@ class PlanDiffTests(unittest.TestCase):
 
 @unittest.skipUnless(pdf_builder.HAVE_PIKEPDF, "pikepdf not installed")
 class ApplyCliTests(unittest.TestCase):
+    def test_malformed_plan_types_exit_2_without_writing(self):
+        for bad in ({"spans": [42]}, {"cell_order": "bad"},
+                    {"headers": []}, {"headers": {"1.0": "0.0"}}):
+            with self.subTest(bad=bad):
+                self.plan.write_text(json.dumps({"tables": {"t1": {
+                    "expect": {"rows": 2, "cells": 4}, **bad,
+                }}}), encoding="utf-8")
+                before = self.src.read_bytes()
+                code, _, err = run(["apply", str(self.src), "--plan", str(self.plan),
+                                    "--out", str(self.out)])
+                self.assertEqual(code, 2)
+                self.assertIn("t1", err)
+                self.assertNotIn("Traceback", err)
+                self.assertFalse(self.out.exists())
+                self.assertEqual(self.src.read_bytes(), before)
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)

@@ -54,6 +54,21 @@ def resolve(tid, table, tp, taken=None):
         err(f"expect {expect} does not match this file ({nrows} rows, {ncells} cells); is the plan for another file?")
         return None, errors
 
+    # Refuse malformed collections before iterating them. These are plan errors,
+    # not PDF/validator failures, and must never reach the writer.
+    if "spans" in tp:
+        if not isinstance(tp["spans"], list) or not all(isinstance(s, dict) for s in tp["spans"]):
+            err("spans must be a list of objects")
+    for key in ("cell_order", "headers"):
+        if key in tp and not isinstance(tp[key], dict):
+            err(f"{key} must be an object")
+    if isinstance(tp.get("headers"), dict):
+        for dep, targets in tp["headers"].items():
+            if not isinstance(targets, list):
+                err(f"headers entry '{dep}' must be a list of cell references (or [] to clear it)")
+    if errors:
+        return None, errors
+
     span = {(r, i): (c["rowspan"], c["colspan"]) for r, row in enumerate(rows) for i, c in enumerate(row["cells"])}
     for s in tp.get("spans", []):
         r, i = s.get("row"), s.get("cell")

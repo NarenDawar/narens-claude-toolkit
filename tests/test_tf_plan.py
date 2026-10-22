@@ -17,6 +17,21 @@ if pdf_builder.HAVE_PIKEPDF:
 class PlanTests(unittest.TestCase):
     GRID = [["Name", "Qty"], ["Apple", "3"], ["Pear", "5"]]
 
+    def test_malformed_collection_types_are_plan_errors(self):
+        cases = [
+            ("spans", None), ("spans", {}), ("spans", "bad"),
+            ("spans", [42]), ("spans", [None]),
+            ("cell_order", []), ("cell_order", None), ("cell_order", "bad"),
+            ("headers", []), ("headers", None), ("headers", "bad"),
+            ("headers", {"1.0": "0.0"}), ("headers", {"1.0": None}),
+        ]
+        for key, value in cases:
+            with self.subTest(key=key, value=value):
+                _, layouts, errors = self.check(self.GRID, {key: value})
+                self.assertEqual(layouts, {})
+                self.assertTrue(any(key in error for error in errors), errors)
+
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
