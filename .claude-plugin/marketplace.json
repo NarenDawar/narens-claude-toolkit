@@ -68,6 +68,11 @@
       "name": "human-writing",
       "source": "./plugins/human-writing",
       "description": "Use when the user wants words written or rewritten in a human, personal voice, including short casual messages: a Slack note, newsletter intro, cover letter, email, post, bio, speech or story, with or without a pasted voice sample. Also use when a draft sounds fake, robotic, generic, corporate or \"ChatGPT-ish\", even if they wrote it with an AI, and as a final pass on anything Claude drafted that the user will send or publish as themselves. Skip code, data, translation, proofreading-only requests, legal text, and anything whose exact wording must stay unchanged."
+    },
+    {
+      "name": "platform-opportunity-scout",
+      "source": "./plugins/platform-opportunity-scout",
+      "description": "Use when the user names a platform or medium (Roblox, YouTube, Instagram, TikTok, Twitch, Etsy, Substack and the like) and wants business ideas built on or around it, or asks what to make, sell or build there (for example 'business ideas for Roblox', 'what could I build around YouTube creators', 'find me a niche on Instagram')."
     }
   ]
 }
