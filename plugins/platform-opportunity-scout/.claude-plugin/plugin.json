@@ -1,0 +1,13 @@
+{
+  "name": "platform-opportunity-scout",
+  "version": "0.1.0",
+  "description": "Use when the user names a platform or medium (Roblox, YouTube, Instagram, TikTok, Twitch, Etsy, Substack and the like) and wants business ideas built on or around it, or asks what to make, sell or build there (for example 'business ideas for Roblox', 'what could I build around YouTube creators', 'find me a niche on Instagram').",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/platform-opportunity-scout",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills"]
+}
