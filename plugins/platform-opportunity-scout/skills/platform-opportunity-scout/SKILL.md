@@ -16,11 +16,11 @@ Take the platform from the user. Do not interrogate. State these defaults in one
 ## Process
 
 1. **Map the money.** Search for how money moves on the platform right now: platform payouts and revenue share, what creators or developers pay for (tools, freelancers, assets, ads), what audiences pay for, what brands pay for. Note the date of each source. Platform economics change often, so anything older than about 18 months is a hypothesis to re-check, not a fact.
-2. **Generate candidates** with the lenses in `references/lenses.md`. Aim for 10 to 15, across all three kinds: **native** (a game, channel, shop or account on the platform), **picks-and-shovels** (a tool or service sold to people who earn on the platform), and **arbitrage** (moving something between platforms or audiences). Picks-and-shovels is usually where a solo founder wins, so do not let it get crowded out by "make a popular thing".
+2. **Generate candidates** with the lenses in `references/lenses.md`. Aim for 10 to 15, written out one line each before you cut, and state the count in the report; fewer is fine only if the lenses are used up. Cover all three kinds: **native** (a game, channel, shop or account on the platform), **picks-and-shovels** (a tool or service sold to people who earn on the platform), and **arbitrage** (moving something between platforms or audiences). Picks-and-shovels is usually where a solo founder wins, so do not let it get crowded out by "make a popular thing".
 3. **Gather evidence** for each candidate: who pays, how much, how many of them, what they use today, and what they complain about in their own words (forums, subreddits, app and tool reviews, creator Discords, job boards, freelance listings).
 4. **Cut to 3 to 5** by fit with the user's constraints and by evidence strength. Drop the rest without ceremony.
 5. **Verify.** REQUIRED: follow `references/verification.md` for every survivor, including its independent-verifier step. A task instruction not to delegate does not cancel this step; if you truly cannot run a separate verifier, say in the report that verification was not independent. This is not optional and not a formality. An idea that fails is reported as dead with the reason, which is useful output.
-6. **Report** in the format below.
+6. **Report** in the format below. Verify once; run a second round of candidates only if fewer than two ideas survive.
 
 ## Report format
 
@@ -30,6 +30,7 @@ Lead with the ranked survivors, best first. For each:
 - **Who pays and why**, with a number if you have a sourced one.
 - **Evidence ledger:** each claim, its source link, its date, and a status: `confirmed` (two independent sources, or one primary source such as the platform's own docs or a public payout), `single-source`, or `unverified`.
 - **Strongest reason it could fail**, from the verification pass.
+- **Competitor check:** the searches you ran and what they found. If a source was blocked, say the check is incomplete; never report "no competitors" from an incomplete check.
 - **Cheapest test** the user can run this week for under $100, with the result that would make them stop.
 
 Then a short **Killed** list: ideas that died in verification, one line each with why. Then say plainly what you could not check, including any source that was blocked (Reddit and Discord often are); name the substitute you used or say there was none. Do not present `unverified` claims as findings.
