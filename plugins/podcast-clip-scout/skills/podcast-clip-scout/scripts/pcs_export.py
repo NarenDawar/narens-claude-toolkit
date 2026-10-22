@@ -3,7 +3,7 @@ import csv
 import json
 from pathlib import Path
 
-from pcs_picks import DIMENSIONS
+from pcs_picks import DIMENSIONS, cue_bounds
 from pcs_transcript import fmt_time
 
 CSV_COLUMNS = [
@@ -17,7 +17,7 @@ def build_rows(cues, picks):
     rows = []
     for rank, clip in enumerate(picks["clips"], 1):
         first, last = clip["start_cue"], clip["end_cue"]
-        start, end = cues[first - 1]["start"], cues[last - 1]["end"]
+        start, end = cue_bounds(cues, first, last)
         rows.append({
             "rank": rank,
             "start": fmt_time(start),

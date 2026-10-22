@@ -41,6 +41,12 @@ def _ends_sentence(text):
     return text.rstrip().rstrip(_CLOSERS).endswith((".", "?", "!"))
 
 
+def cue_bounds(cues, first, last):
+    """The full time span of an inclusive, validated 1-based cue range."""
+    selected = cues[first - 1:last]
+    return min(cue["start"] for cue in selected), max(cue["end"] for cue in selected)
+
+
 def _check_range(tag, clip, cues, min_s, max_s, errors, warnings):
     """Returns (first_cue, last_cue, start, end) when the cue numbers are usable, else None."""
     first, last = clip.get("start_cue"), clip.get("end_cue")
@@ -54,7 +60,7 @@ def _check_range(tag, clip, cues, min_s, max_s, errors, warnings):
     if first > last:
         errors.append(f"{tag}: start_cue {first} is after end_cue {last}")
         return None
-    start, end = cues[first - 1]["start"], cues[last - 1]["end"]
+    start, end = cue_bounds(cues, first, last)
     length = round(end - start, 3)
     if length < min_s or length > max_s:
         errors.append(f"{tag}: lasts {length:g}s, outside {min_s:g}-{max_s:g}s")
