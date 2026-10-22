@@ -66,7 +66,7 @@ class ParseChoiceTests(unittest.TestCase):
             ('{"tool": "get_item"}', "get_item"),
             ('```json\n{"tool": "get_item"}\n```', "get_item"),
             ('I would pick this one: {"tool": "search_items"} because it fits.', "search_items"),
-            ('{"tool": "get_item"} {"tool": "search_items"}', "get_item"),
+            ('{"tool": "get_item"} {"tool": "search_items"}', "search_items"),
             ('{"other": 1} {"tool": "get_item"}', "get_item"),
         ]
         for text, expected in cases:
@@ -87,6 +87,15 @@ class ParseChoiceTests(unittest.TestCase):
         for text in cases:
             with self.subTest(text):
                 self.assertIsNone(bp.parse_choice(text, NAMES))
+
+    def test_quoted_description_does_not_override_the_final_choice(self):
+        text = 'The description says {"tool":"search_items"}. I pick {"tool":"get_item"}.'
+        self.assertEqual(bp.parse_choice(text, NAMES), "get_item")
+
+    def test_unknown_final_choice_does_not_fall_back_to_a_quoted_tool(self):
+        self.assertIsNone(bp.parse_choice(
+            '{"tool":"get_item"} but my answer is {"tool":"ghost"}', NAMES
+        ))
 
     def test_pathological_replies_are_fast_and_none(self):
         started = time.monotonic()
