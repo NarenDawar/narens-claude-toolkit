@@ -148,6 +148,40 @@ class ClassifyTests(unittest.TestCase):
 
 
 class ExecuteTests(Base):
+    def test_five_consecutive_timeouts_stop_before_the_next_model(self):
+        self.script(default={"result": "bug", "cost": 0.001, "sleep": 20})
+        started = time.monotonic()
+        entries, aborted, _ = self.execute(
+            data=cases_data(*[case(f"c{i}") for i in range(6)]),
+            models=("haiku", "sonnet"), timeout=0.1,
+        )
+        self.assertLess(time.monotonic() - started, 10)
+        self.assertIsNotNone(aborted)
+        self.assertIn("5", aborted)
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(len(entries[0]["runs"]), 5)
+        self.assertTrue(all(run["kind"] == "timeout" for run in entries[0]["runs"]))
+
+    def test_a_completed_run_resets_the_timeout_streak(self):
+        from unittest.mock import patch
+
+        timeout = ("", -1, True)
+        success = (json.dumps({"result": "bug", "total_cost_usd": 0.001}), 0, False)
+        with patch.object(br, "run_claude", side_effect=[timeout] * 4 + [success] + [timeout] * 4):
+            entries, aborted, _ = self.execute(data=cases_data(*[case(f"c{i}") for i in range(9)]))
+        self.assertIsNone(aborted)
+        self.assertEqual(len(entries[0]["runs"]), 9)
+
+    def test_timeouts_and_cli_failures_share_the_same_streak(self):
+        from unittest.mock import patch
+
+        failures = [("", -1, True), ("bad", 1, False)] * 3
+        with patch.object(br, "run_claude", side_effect=failures) as run:
+            entries, aborted, _ = self.execute(data=cases_data(*[case(f"c{i}") for i in range(6)]))
+        self.assertIsNotNone(aborted)
+        self.assertEqual(run.call_count, 5)
+        self.assertEqual(len(entries[0]["runs"]), 5)
+
     def test_a_passing_run_is_recorded_with_cost_and_resolved_model(self):
         self.script(default={"result": "found a bug", "cost": 0.004})
         entries, aborted, _ = self.execute()
