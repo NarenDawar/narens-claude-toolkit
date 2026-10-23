@@ -1,0 +1,13 @@
+{
+  "name": "straight-talk",
+  "version": "0.1.0",
+  "description": "Use when giving an assessment, review or verdict on something the user made or decided, or when the user pushes back, shows hurt, or cites others' approval of work you rated lower.",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/straight-talk",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills"]
+}
