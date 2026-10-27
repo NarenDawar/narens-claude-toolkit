@@ -68,6 +68,7 @@ Plugin names, versions and behavior are unchanged. Removing the old marketplace 
 
 | Server | What it does | Folder |
 | --- | --- | --- |
+| [`anki-mcp`](servers/anki-mcp/README.md) | Lets Claude quiz you on your due Anki cards, record your answers, and add flashcards without creating duplicates. | [`servers/anki-mcp`](servers/anki-mcp) |
 | [`mcp-fixer`](servers/mcp-fixer/README.md) | Scores an MCP server's tool definitions with deterministic lint rules, so you can see what makes agents pick the wrong tool or waste tokens. | [`servers/mcp-fixer`](servers/mcp-fixer) |
 <!-- CATALOG:END -->
 

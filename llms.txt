@@ -24,4 +24,5 @@
 
 ## MCP servers
 
+- [anki-mcp](https://github.com/NarenDawar/narens-claude-toolkit/blob/main/servers/anki-mcp/README.md): Lets Claude quiz you on your due Anki cards, record your answers, and add flashcards without creating duplicates.
 - [mcp-fixer](https://github.com/NarenDawar/narens-claude-toolkit/blob/main/servers/mcp-fixer/README.md): Scores an MCP server's tool definitions with deterministic lint rules, so you can see what makes agents pick the wrong tool or waste tokens.

@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anki-mcp"
+version = "0.1.0"
+description = "Run Anki study sessions from Claude: due cards, answers, duplicate-safe card creation."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Naren" }]
+dependencies = []
+
+[project.scripts]
+anki-mcp = "anki_mcp.server:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
