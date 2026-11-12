@@ -78,6 +78,11 @@
       "name": "straight-talk",
       "source": "./plugins/straight-talk",
       "description": "Use when giving an assessment, review or verdict on something the user made or decided, or when the user pushes back, shows hurt, or cites others' approval of work you rated lower."
+    },
+    {
+      "name": "item-recommender",
+      "source": "./plugins/item-recommender",
+      "description": "Use when the user asks Claude to find, pick, compare or recommend a product to buy (for example 'find me the best toothbrush', 'which laptop should I get', 'best budget vacuum', 'X vs Y, which one?', 'what's worth buying for ...')."
     }
   ]
 }
