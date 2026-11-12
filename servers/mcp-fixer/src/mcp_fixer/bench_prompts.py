@@ -88,12 +88,14 @@ def _json_values(text):
 def parse_choice(text, names):
     """The tool name a reply picked, or None when the reply is unusable.
 
-    The first JSON object with a string "tool" decides; its value must be exactly one of `names`.
+    The last JSON object with a string "tool" decides; its value must be exactly one of `names`.
+    Earlier objects may be quoted from a tool description rather than the model's final answer.
     """
+    choice = None
     for value in _json_values(text[:MAX_REPLY_CHARS]):
         if isinstance(value, dict) and isinstance(value.get("tool"), str):
-            return value["tool"] if value["tool"] in names else None
-    return None
+            choice = value["tool"]
+    return choice if choice in names else None
 
 
 def parse_task_list(text):
