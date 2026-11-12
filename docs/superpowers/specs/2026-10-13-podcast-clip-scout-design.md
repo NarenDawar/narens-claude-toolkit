@@ -66,7 +66,7 @@ Parses to a list of cues `{n, start, end, text, speaker}`; `n` is 1-based.
 
 Errors:
 - A cue number does not exist, or `start_cue > end_cue`.
-- The duration (end time of `end_cue` minus start time of `start_cue`) is outside `--min` to `--max`.
+- The duration (latest end time minus earliest start time across every cue from `start_cue` to `end_cue`, inclusive) is outside `--min` to `--max`. Checks and exports use these same bounds, so rolling/overlapping captions are not truncated and out-of-order cue times cannot produce a negative duration.
 - Two clips overlap in time.
 - A score is not an integer from 0 to 3, or one of the five dimensions is missing.
 - `total` is not the sum of the scores.

@@ -26,6 +26,35 @@ def run(clips, cues=None, **kw):
 
 
 class CheckTests(unittest.TestCase):
+    def test_nested_cues_do_not_hide_time_overlap(self):
+        cues = [
+            {"start": 0, "end": 30, "text": "First long cue."},
+            {"start": 10, "end": 20, "text": "Nested cue."},
+            {"start": 25, "end": 50, "text": "Later cue."},
+            {"start": 50, "end": 80, "text": "Last cue."},
+        ]
+        clips = [good(start_cue=1, end_cue=2), good(start_cue=3, end_cue=4)]
+        errors, _ = p.check(cues, {"clips": clips}, min_seconds=0, max_seconds=1000)
+        self.assertTrue(any("overlap" in error for error in errors), errors)
+
+    def test_nested_cues_use_the_full_time_span_for_duration(self):
+        cues = [
+            {"start": 0, "end": 70, "text": "Long cue."},
+            {"start": 5, "end": 10, "text": "Nested cue."},
+        ]
+        errors, _ = p.check(cues, {"clips": [good(start_cue=1, end_cue=2)]})
+        self.assertTrue(any("lasts 70s" in error for error in errors), errors)
+
+    def test_adjacent_time_boundaries_are_not_an_overlap(self):
+        cues = [
+            {"start": 0, "end": 30, "text": "First cue."},
+            {"start": 30, "end": 60, "text": "Next cue."},
+        ]
+        errors, _ = p.check(cues, {"clips": [
+            good(start_cue=1, end_cue=1), good(start_cue=2, end_cue=2),
+        ]})
+        self.assertEqual(errors, [])
+
     def assertOneError(self, clips, fragment, **kw):
         errors, _ = run(clips, **kw)
         self.assertTrue(any(fragment in e for e in errors), errors)

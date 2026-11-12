@@ -16,6 +16,26 @@ import pcs_export as x  # noqa: E402
 
 
 class ExportTests(unittest.TestCase):
+    def test_nested_cues_export_the_full_time_span(self):
+        cues = [
+            {"start": 0, "end": 30, "text": "Outer"},
+            {"start": 10, "end": 20, "text": "Inner"},
+        ]
+        clip = dict(pcs_builder.ideal_picks()["clips"][0], start_cue=1, end_cue=2)
+        cut = x.build_rows(cues, {"clips": [clip]})[0]
+        self.assertEqual((cut["start"], cut["end"], cut["duration_seconds"]),
+                         ("00:00:00.000", "00:00:30.000", 30))
+
+    def test_out_of_order_cues_export_the_earliest_start_and_latest_end(self):
+        cues = [
+            {"start": 60, "end": 70, "text": "Later"},
+            {"start": 5, "end": 10, "text": "Earlier"},
+        ]
+        clip = dict(pcs_builder.ideal_picks()["clips"][0], start_cue=1, end_cue=2)
+        cut = x.build_rows(cues, {"clips": [clip]})[0]
+        self.assertEqual((cut["start"], cut["end"], cut["duration_seconds"]),
+                         ("00:00:05.000", "00:01:10.000", 65))
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
