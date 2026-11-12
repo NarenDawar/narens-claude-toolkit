@@ -246,7 +246,7 @@ def execute(claude, definition, cases_data, base_dir, models, runs, options, log
                     spent += (record["cost"] or 0.0) + (record["judgeCost"] or 0.0)
                     if record["kind"] == "timeout":
                         spent += options["max_run_usd"]  # a killed run may have spent up to its cap
-                    if record["kind"] in ("cli", "no-result"):
+                    if record["kind"] in ("cli", "no-result", "timeout"):
                         streak += 1
                     else:
                         streak = 0
@@ -260,7 +260,7 @@ def execute(claude, definition, cases_data, base_dir, models, runs, options, log
                     if record.get("judge") is not None or judge_error:
                         judge_checked = True
                     if streak >= CONSECUTIVE_CLI_FAILURES:
-                        return entries, f"claude failed {CONSECUTIVE_CLI_FAILURES} runs in a row (not a check failure); stopped. Check that claude is installed and logged in"
+                        return entries, f"claude failed {CONSECUTIVE_CLI_FAILURES} runs in a row (CLI errors, missing results, or timeouts; not a check failure); stopped. Check that claude is installed, logged in, and responding"
         return entries, None
     finally:
         shutil.rmtree(meta, ignore_errors=True)
