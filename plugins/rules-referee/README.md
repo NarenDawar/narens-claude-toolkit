@@ -39,7 +39,7 @@ Needs Python 3.9 or newer and either the `pypdf` package (`pip install pypdf`) o
 
 ## Example
 
-**Before:** "Can I take a second card after a face-up locomotive?" gets a confident answer, a paraphrase of the rule, and no page number.
+**Before:** "Can I take a second card after a face-up locomotive?" gets the right answer, a quote that may be slightly reworded, and no page number.
 
 **After:** "ANSWERED: no. Page 3: 'it must be the first train card you draw this turn and you cannot then draw a second card.' A locomotive drawn blind from the deck is an exception, quoted on the same page."
 
