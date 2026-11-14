@@ -1,0 +1,13 @@
+{
+  "name": "oss-issue-matcher",
+  "version": "0.1.0",
+  "description": "Use when the user wants to find an open-source issue or project to contribute to, a good first issue, or help picking a repo whose maintainers will actually review and merge outside pull requests (for example 'find me a first open-source contribution', 'good first issues for Rust', 'is this repo worth contributing to').",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/oss-issue-matcher",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills"]
+}
