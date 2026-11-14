@@ -83,6 +83,11 @@
       "name": "item-recommender",
       "source": "./plugins/item-recommender",
       "description": "Use when the user asks Claude to find, pick, compare or recommend a product to buy (for example 'find me the best toothbrush', 'which laptop should I get', 'best budget vacuum', 'X vs Y, which one?', 'what's worth buying for ...')."
+    },
+    {
+      "name": "oss-issue-matcher",
+      "source": "./plugins/oss-issue-matcher",
+      "description": "Use when the user wants to find an open-source issue or project to contribute to, a good first issue, or help picking a repo whose maintainers will actually review and merge outside pull requests (for example 'find me a first open-source contribution', 'good first issues for Rust', 'is this repo worth contributing to')."
     }
   ]
 }
