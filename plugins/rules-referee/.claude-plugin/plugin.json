@@ -1,0 +1,13 @@
+{
+  "name": "rules-referee",
+  "version": "0.1.0",
+  "description": "Use when the user has a board game, card game or tabletop RPG rulebook (PDF or text) and wants a rules question or dispute settled, or asks what the rulebook actually says (for example 'does the rulebook let me do this?', 'we're arguing about a rule', 'settle this using the rulebook').",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/rules-referee",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills"]
+}

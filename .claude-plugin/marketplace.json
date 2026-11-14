@@ -88,6 +88,11 @@
       "name": "oss-issue-matcher",
       "source": "./plugins/oss-issue-matcher",
       "description": "Use when the user wants to find an open-source issue or project to contribute to, a good first issue, or help picking a repo whose maintainers will actually review and merge outside pull requests (for example 'find me a first open-source contribution', 'good first issues for Rust', 'is this repo worth contributing to')."
+    },
+    {
+      "name": "rules-referee",
+      "source": "./plugins/rules-referee",
+      "description": "Use when the user has a board game, card game or tabletop RPG rulebook (PDF or text) and wants a rules question or dispute settled, or asks what the rulebook actually says (for example 'does the rulebook let me do this?', 'we're arguing about a rule', 'settle this using the rulebook')."
     }
   ]
 }
