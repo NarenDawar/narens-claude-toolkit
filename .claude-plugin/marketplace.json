@@ -93,6 +93,11 @@
       "name": "rules-referee",
       "source": "./plugins/rules-referee",
       "description": "Use when the user has a board game, card game or tabletop RPG rulebook (PDF or text) and wants a rules question or dispute settled, or asks what the rulebook actually says (for example 'does the rulebook let me do this?', 'we're arguing about a rule', 'settle this using the rulebook')."
+    },
+    {
+      "name": "training-load-watchdog",
+      "source": "./plugins/training-load-watchdog",
+      "description": "Use when a runner shares a Strava, Garmin or other activity export (CSV) and wants to know if their recent training looks risky, if they are ramping up too fast, or what the next weeks of running should be (for example 'check my training for injury risk', 'am I doing too much?', 'plan my next two weeks from my Strava export')."
     }
   ]
 }
