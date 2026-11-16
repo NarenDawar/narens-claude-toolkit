@@ -98,6 +98,11 @@
       "name": "training-load-watchdog",
       "source": "./plugins/training-load-watchdog",
       "description": "Use when a runner shares a Strava, Garmin or other activity export (CSV) and wants to know if their recent training looks risky, if they are ramping up too fast, or what the next weeks of running should be (for example 'check my training for injury risk', 'am I doing too much?', 'plan my next two weeks from my Strava export')."
+    },
+    {
+      "name": "deal-sparring-partner",
+      "source": "./plugins/deal-sparring-partner",
+      "description": "Use when the user is about to negotiate a purchase, rent, vendor, contract or service deal (a car, an apartment lease, a contractor quote, a subscription renewal) and wants to prepare, rehearse or practise it, or have the other side played back to them (for example 'help me negotiate this', 'play the landlord', 'let me practise before I call the dealer')."
     }
   ]
 }
