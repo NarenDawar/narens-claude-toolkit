@@ -40,7 +40,7 @@ Needs Python 3.9 or newer. No other packages.
 
 **Before:** "Score 6.5/10. The seller got more of the range."
 
-**After:** "Deal at $12,900. Your walkaway was $13,500 and the seller's estimated floor $12,800, so you kept about 86% of the zone. You called $11,800 final and then moved, which taught the seller to discount every later limit."
+**After** (scoring that same $12,900 deal): "Deal at $12,900. Your walkaway was $13,500 and the seller's estimated floor $12,800, so you kept about 86% of the zone. You called $11,800 final and then moved, which taught the seller to discount every later limit."
 
 ---
 
