@@ -103,6 +103,11 @@
       "name": "deal-sparring-partner",
       "source": "./plugins/deal-sparring-partner",
       "description": "Use when the user is about to negotiate a purchase, rent, vendor, contract or service deal (a car, an apartment lease, a contractor quote, a subscription renewal) and wants to prepare, rehearse or practise it, or have the other side played back to them (for example 'help me negotiate this', 'play the landlord', 'let me practise before I call the dealer')."
+    },
+    {
+      "name": "news-source-reader",
+      "source": "./plugins/news-source-reader",
+      "description": "Use when the user shares a news article (link, saved page or pasted text) and asks how reliable or well sourced it is, who is behind the outlet, whether its claims hold up, or what it leaves out (for example 'is this article trustworthy?', 'where does this claim come from?', 'what's missing from this story?')."
     }
   ]
 }
