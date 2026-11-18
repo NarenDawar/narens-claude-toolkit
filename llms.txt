@@ -22,6 +22,7 @@
 - [straight-talk](https://github.com/NarenDawar/narens-claude-toolkit/blob/main/plugins/straight-talk/README.md): Use when giving an assessment, review or verdict on something the user made or decided, or when the user pushes back, shows hurt, or cites others' approval of work you rated lower.
 - [subagent-tax-auditor](https://github.com/NarenDawar/narens-claude-toolkit/blob/main/plugins/subagent-tax-auditor/README.md): Use when the user asks why their Claude Code quota or usage limit runs out so fast, which subagents cost the most, or wants their subagents made cheaper (for example 'audit my subagents', 'which agent is eating my quota', 'make my agents cheaper').
 - [training-load-watchdog](https://github.com/NarenDawar/narens-claude-toolkit/blob/main/plugins/training-load-watchdog/README.md): Use when a runner shares a Strava, Garmin or other activity export (CSV) and wants to know if their recent training looks risky, if they are ramping up too fast, or what the next weeks of running should be (for example 'check my training for injury risk', 'am I doing too much?', 'plan my next two weeks from my Strava export').
+- [trip-expense-settler](https://github.com/NarenDawar/narens-claude-toolkit/blob/main/plugins/trip-expense-settler/README.md): Use when the user has a group's shared expenses (a chat log, notes, receipts, a messy list of who paid for what) from a trip, a house or an event and wants to know who owes whom and how to settle up with the fewest payments.
 
 ## Mods
 

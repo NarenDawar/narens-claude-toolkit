@@ -1,0 +1,13 @@
+{
+  "name": "trip-expense-settler",
+  "version": "0.1.0",
+  "description": "Use when the user has a group's shared expenses (a chat log, notes, receipts, a messy list of who paid for what) from a trip, a house or an event and wants to know who owes whom and how to settle up with the fewest payments.",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/trip-expense-settler",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills"]
+}
