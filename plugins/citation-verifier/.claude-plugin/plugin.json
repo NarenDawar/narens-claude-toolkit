@@ -1,0 +1,13 @@
+{
+  "name": "citation-verifier",
+  "version": "0.1.0",
+  "description": "Use when the user has a manuscript, bibliography, reference list or AI-written text with citations and wants to know whether the references are real and correctly cited, or whether the cited works actually say what the text claims (for example 'check my references', 'are these citations hallucinated?', 'does this paper really say that?').",
+  "author": {
+    "name": "Naren",
+    "url": "https://github.com/NarenDawar"
+  },
+  "homepage": "https://github.com/NarenDawar/narens-claude-toolkit/tree/main/plugins/citation-verifier",
+  "repository": "https://github.com/NarenDawar/narens-claude-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "claude-skills", "agent-skills"]
+}

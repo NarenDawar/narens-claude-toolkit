@@ -108,6 +108,11 @@
       "name": "news-source-reader",
       "source": "./plugins/news-source-reader",
       "description": "Use when the user shares a news article (link, saved page or pasted text) and asks how reliable or well sourced it is, who is behind the outlet, whether its claims hold up, or what it leaves out (for example 'is this article trustworthy?', 'where does this claim come from?', 'what's missing from this story?')."
+    },
+    {
+      "name": "citation-verifier",
+      "source": "./plugins/citation-verifier",
+      "description": "Use when the user has a manuscript, bibliography, reference list or AI-written text with citations and wants to know whether the references are real and correctly cited, or whether the cited works actually say what the text claims (for example 'check my references', 'are these citations hallucinated?', 'does this paper really say that?')."
     }
   ]
 }
