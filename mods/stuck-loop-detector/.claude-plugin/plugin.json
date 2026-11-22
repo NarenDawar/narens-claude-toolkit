@@ -1,0 +1,1 @@
+{ "name": "stuck-loop-detector", "version": "0.1.0", "description": "Notices when Claude repeats the same tool call or bounces between two, shows a status warning, and tells Claude to change approach." }
