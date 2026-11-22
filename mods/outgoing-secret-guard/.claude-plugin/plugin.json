@@ -1,0 +1,1 @@
+{ "name": "outgoing-secret-guard", "version": "0.1.0", "description": "Redacts API keys, tokens and private keys from your prompts before the model sees them, and blocks network-bound tool calls that carry one." }
